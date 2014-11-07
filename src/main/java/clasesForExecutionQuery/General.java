@@ -1,5 +1,7 @@
 package clasesForExecutionQuery;
 
+import com.google.gson.JsonObject;
+
 /**
  * Created by narek on 01.11.14.
  */
@@ -10,7 +12,7 @@ public class General implements GeneralMethods{
     }
 
     @Override
-    public String delegationCall (String method, String data) {
+    public String delegationCall (String method, JsonObject data) {
         return "ok";
     }
 

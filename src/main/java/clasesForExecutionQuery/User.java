@@ -2,7 +2,12 @@ package clasesForExecutionQuery;
 
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import database.Database;
+import util.JsonResponse;
+
+import java.sql.SQLException;
+
 /**
  * Created by narek on 01.11.14.
  */
@@ -16,40 +21,49 @@ public class User implements GeneralMethods{
         this.gson = gson;
     }
 
-    private String create(String query) {
+    private String create(JsonObject userData) {
+        try {
+            System.out.println(userData);
+            int id = database.createUser(userData);
+            userData.addProperty("id", id);
+            return JsonResponse.createResponse(userData);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "bad";
+    }
+
+    private String details(JsonObject query) {
         return "Ok";
     }
 
-    private String details(String query) {
+    private String follow(JsonObject query) {
         return "Ok";
     }
 
-    private String follow(String query) {
+    private String listFollowers(JsonObject query) {
         return "Ok";
     }
 
-    private String listFollowers(String query) {
+    private String listFollowing(JsonObject query) {
         return "Ok";
     }
 
-    private String listFollowing(String query) {
+    private String listPosts(JsonObject query) {
         return "Ok";
     }
 
-    private String listPosts(String query) {
+    private String unfollow(JsonObject query) {
         return "Ok";
     }
 
-    private String unfollow(String query) {
-        return "Ok";
-    }
-
-    private String updateProfile(String query) {
+    private String updateProfile(JsonObject query) {
         return "Ok";
     }
 
     @Override
-    public String delegationCall (String method, String data) {
+    public String delegationCall (String method, JsonObject data) {
 
         switch (method){
             case "create":

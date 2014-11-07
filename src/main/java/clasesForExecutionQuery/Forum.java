@@ -23,12 +23,12 @@ public class Forum implements GeneralMethods {
         this.gson = gson;
     }
 
-    private String create(String data) {
+    private String create(JsonObject forumData) {
         try {
-            JsonObject forumData = gson.fromJson(data, JsonObject.class);
-            System.out.println(forumData);
+            System.out.println("Это форум  ");
             int id = database.createForum(forumData);
             forumData.addProperty("id", id);
+
             return JsonResponse.createResponse(forumData);
 
         } catch (SQLException e) {
@@ -37,25 +37,26 @@ public class Forum implements GeneralMethods {
         return "bad";
     }
 
-    private String details(String query) {
+    private String details(JsonObject query) throws SQLException {
+        System.out.println(query);
+        return JsonResponse.createResponse(database.forumDetails(query));
+    }
+
+    private String listPosts(JsonObject query) {
         return "ok";
     }
 
-    private String listPosts(String query) {
+    private String listThreads(JsonObject query) {
         return "ok";
     }
 
-    private String listThreads(String query) {
-        return "ok";
-    }
-
-    private String listUsers(String query) {
+    private String listUsers(JsonObject query) {
         return "ok";
     }
 
 
     @Override
-    public String delegationCall (String method, String data) {
+    public String delegationCall (String method, JsonObject data) throws SQLException {
         switch (method) {
             case "create":
                 return create(data);

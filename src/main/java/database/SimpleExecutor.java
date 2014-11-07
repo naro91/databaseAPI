@@ -1,9 +1,6 @@
 package database;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Created by narek on 03.11.14.
@@ -16,17 +13,17 @@ public class SimpleExecutor {
         stmt.close();
     }
 
-    public int execUpdateAndReturnId(Connection connection, String update) throws SQLException
-    {
-        Statement stmt = connection.createStatement();
-        //stmt.execute(update, Statement.RETURN_GENERATED_KEYS);
-
-        //ResultSet created = stmt.getGeneratedKeys();
-
-        //created.next();
-        int id = stmt.executeUpdate(update); /*created.getInt(1);*/
-
-        stmt.close();
+    public int execUpdateAndReturnId(PreparedStatement stm) throws SQLException  {
+        int id ;
+        stm.executeUpdate();
+        ResultSet resultSet = stm.getGeneratedKeys();
+        if (resultSet != null && resultSet.next()) {
+            id = resultSet.getInt(1);
+        } else {
+            id = -1;
+        }
+        stm.close();
         return id;
+
     }
 }

@@ -1,6 +1,9 @@
 package frontend;
 
 import clasesForExecutionQuery.Forum;
+import clasesForExecutionQuery.Post;
+import clasesForExecutionQuery.Threads;
+import clasesForExecutionQuery.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import database.Database;
@@ -11,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLDecoder;
-
+import java.sql.SQLException;
 
 
 /**
@@ -19,16 +22,24 @@ import java.net.URLDecoder;
  */
 public class Frontend extends HttpServlet {
     private Gson gson = new Gson();
-    private String json, responseResult;
+    private String responseResult;
+    JsonObject json;
     Database database = new Database();
     private Forum forum = new Forum(database, gson);
+    private Post post = new Post(database, gson);
+    private User user = new User(database, gson);
+    private Threads thread = new Threads(database, gson);
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
         response.setContentType("text/html;charset=utf-8");
         json = getRequestParser(URLDecoder.decode(request.getQueryString(), "UTF-8")); // получение json из get запроса
-        responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
+        try {
+            responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
         response.getOutputStream().print(responseResult); // отправка ответа
         response.getOutputStream().flush();
@@ -40,16 +51,20 @@ public class Frontend extends HttpServlet {
 
         response.setContentType("text/html;charset=utf-8");
         json = requestGetJson(request);  // получение json из запроса
-        responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
+        try {
+            responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
         responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
-        //response.getOutputStream().print(responseResult); // отправка ответа
-        //response.getOutputStream().flush();
+        response.getOutputStream().print(responseResult); // отправка ответа
+        response.getOutputStream().flush();
         System.out.println(responseResult);
     }
 
 
-    private String delegationCall (String requestMass[], String json) {  // функция для делегирования запроса
-
+    private String delegationCall (String requestMass[], JsonObject json) throws SQLException {  // функция для делегирования запроса
+        System.out.println(requestMass[3]);
         if (requestMass.length == 4) {
             if (requestMass[3].equals("clear")) {
                 return "ok"/*clear()*/;
@@ -62,11 +77,11 @@ public class Frontend extends HttpServlet {
                     case "forum":
                         return forum.delegationCall(requestMass[4], json);
                     case "post":
-                        return "ok"/*call post method*/;
+                        return post.delegationCall(requestMass[4], json);
                     case "user":
-                        return "ok"/*call user method*/;
+                        return user.delegationCall(requestMass[4], json);
                     case "thread":
-                        return "ok"/*call thread method*/;
+                        return thread.delegationCall(requestMass[4], json);
                     default: return "bad";
                 }
             } else return "bad";
@@ -74,34 +89,36 @@ public class Frontend extends HttpServlet {
 
     }
 
-    private String requestGetJson (HttpServletRequest request) throws IOException { // функция для считывания json в запросе
+    private JsonObject requestGetJson (HttpServletRequest request) throws IOException { // функция для считывания json в запросе
         StringBuilder json = new StringBuilder();
         String temp;
         while ((temp = request.getReader().readLine()) != null) {
             json.append(temp);
         }
-        return json.toString();
+        return gson.fromJson(json.toString(), JsonObject.class);
     }
 
     private void responseSetstatus (String status, HttpServletResponse response) { // функция для установления статуса ответа
         switch (status) {
-            case "ok":
-                response.setStatus(HttpServletResponse.SC_OK);
+            case "bad1":
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 break;
             case "bad":
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                break;
+            default: response.setStatus(HttpServletResponse.SC_OK);
                 break;
         }
     }
 
 
-    public String getRequestParser ( String data ) {
+    public JsonObject getRequestParser ( String data ) {
         JsonObject jsonObject = new JsonObject();
         String strings[] = data.split("&");
         for(int i = 0; i < strings.length; i++) {
             String values[] = strings[i].split("=");
             jsonObject.addProperty(values[0], values[1]);
         }
-        return gson.toJson(jsonObject);
+        return jsonObject;
     }
 }

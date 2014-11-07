@@ -10,7 +10,7 @@ public class JsonResponse {
         JsonObject requestResult = new JsonObject();
 
         requestResult.addProperty("code", 0);
-        requestResult.add("request", data);
+        requestResult.add("response", data);
         return requestResult.toString();
     }
 }
