@@ -6,8 +6,7 @@ import java.sql.*;
  * Created by narek on 03.11.14.
  */
 public class SimpleExecutor {
-    public void execUpdate(Connection connection, String update) throws SQLException
-    {
+    public void execUpdate(Connection connection, String update) throws SQLException {
         Statement stmt = connection.createStatement();
         stmt.execute(update);
         stmt.close();
@@ -24,6 +23,5 @@ public class SimpleExecutor {
         }
         stm.close();
         return id;
-
     }
 }

@@ -38,7 +38,7 @@ public class Forum implements GeneralMethods {
     }
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println(query);
+        System.out.println("Это детали форум  " + query);
         return JsonResponse.createResponse(database.forumDetails(query));
     }
 

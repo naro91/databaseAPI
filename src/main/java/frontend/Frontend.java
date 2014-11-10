@@ -6,6 +6,7 @@ import clasesForExecutionQuery.Threads;
 import clasesForExecutionQuery.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import clasesForExecutionQuery.General;
 import database.Database;
 
 import javax.servlet.ServletException;
@@ -29,6 +30,7 @@ public class Frontend extends HttpServlet {
     private Post post = new Post(database, gson);
     private User user = new User(database, gson);
     private Threads thread = new Threads(database, gson);
+    private General general = new General(database, gson);
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
@@ -64,10 +66,9 @@ public class Frontend extends HttpServlet {
 
 
     private String delegationCall (String requestMass[], JsonObject json) throws SQLException {  // функция для делегирования запроса
-        System.out.println(requestMass[3]);
         if (requestMass.length == 4) {
             if (requestMass[3].equals("clear")) {
-                return "ok"/*clear()*/;
+                return general.clear();
             } else {
                 return "bad"/*clear()*/;
             }

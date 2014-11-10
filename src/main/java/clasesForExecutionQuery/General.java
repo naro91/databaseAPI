@@ -1,19 +1,25 @@
 package clasesForExecutionQuery;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import database.Database;
+
+import java.sql.SQLException;
 
 /**
  * Created by narek on 01.11.14.
  */
-public class General implements GeneralMethods{
+public class General {
+    Database database;
+    Gson gson;
 
-    private String clear() {
-        return "ok";
+    public General(Database database, Gson gson) {
+        this.database = database;
+        this.gson = gson;
     }
 
-    @Override
-    public String delegationCall (String method, JsonObject data) {
-        return "ok";
+    public String clear() throws SQLException {
+        return database.clear();
     }
 
 }

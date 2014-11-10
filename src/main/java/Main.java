@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import frontend.Frontend;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -12,7 +14,6 @@ public class Main {
     public static void main(String args[]) throws Exception{
         //FrontendTest frontend = new FrontendTest();
         Frontend frontend = new Frontend();
-
         Server server = new Server(8080);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         server.setHandler(context);

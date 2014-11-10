@@ -23,7 +23,7 @@ public class User implements GeneralMethods{
 
     private String create(JsonObject userData) {
         try {
-            System.out.println(userData);
+            System.out.println("Это юзер  " + userData.toString() );
             int id = database.createUser(userData);
             userData.addProperty("id", id);
             return JsonResponse.createResponse(userData);
