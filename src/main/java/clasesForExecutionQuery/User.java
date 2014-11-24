@@ -34,12 +34,14 @@ public class User implements GeneralMethods{
         return "bad";
     }
 
-    private String details(JsonObject query) {
-        return "Ok";
+    private String details(JsonObject query) throws SQLException {
+        System.out.println("Это User детали");
+        return JsonResponse.createResponse(database.userDetails(query));
     }
 
-    private String follow(JsonObject query) {
-        return "Ok";
+    private String follow(JsonObject query) throws SQLException {
+        System.out.println("Это follow User");
+        return JsonResponse.createResponse(database.userFollow(query));
     }
 
     private String listFollowers(JsonObject query) {
@@ -54,16 +56,18 @@ public class User implements GeneralMethods{
         return "Ok";
     }
 
-    private String unfollow(JsonObject query) {
-        return "Ok";
+    private String unfollow(JsonObject query) throws SQLException {
+        System.out.println("Это User unfollow");
+        return JsonResponse.createResponse(database.userUnfollow(query));
     }
 
-    private String updateProfile(JsonObject query) {
-        return "Ok";
+    private String updateProfile(JsonObject query) throws SQLException {
+        System.out.println("Это update user");
+        return JsonResponse.createResponse(database.userUpdate(query));
     }
 
     @Override
-    public String delegationCall (String method, JsonObject data) {
+    public String delegationCall (String method, JsonObject data) throws SQLException {
 
         switch (method){
             case "create":

@@ -23,7 +23,7 @@ public class Post implements GeneralMethods{
 
     private String create(JsonObject postData) {
         try {
-            System.out.println("Это пост");
+            System.out.println("Это Post create");
             System.out.println(postData);
             int id = database.createPost(postData);
             postData.addProperty("id", id);
@@ -36,24 +36,29 @@ public class Post implements GeneralMethods{
         return "bad";
     }
 
-    private String details(JsonObject query) {
-        return "ok";
+    private String details(JsonObject query) throws SQLException {
+        System.out.println("Это Post details");
+        System.out.println(query);
+        return JsonResponse.createResponse(database.postDetails(query));
     }
 
     private String list(JsonObject query) {
         return "ok";
     }
 
-    private String remove(JsonObject query) {
-        return "ok";
+    private String remove(JsonObject query) throws SQLException {
+        System.out.println("Это Post remove");
+        return JsonResponse.createResponse(database.postRemove(query));
     }
 
-    private String restore(JsonObject query) {
-        return "ok";
+    private String restore(JsonObject query) throws SQLException {
+        System.out.println("Это Post restore");
+        return JsonResponse.createResponse(database.postRestore(query));
     }
 
-    private String update(JsonObject query) {
-        return "ok";
+    private String update(JsonObject query) throws SQLException {
+        System.out.println("Это Post update");
+        return JsonResponse.createResponse(database.postUpdate(query));
     }
 
     private String vote(JsonObject query) {
@@ -61,7 +66,7 @@ public class Post implements GeneralMethods{
     }
 
     @Override
-    public String delegationCall (String method, JsonObject data) {
+    public String delegationCall (String method, JsonObject data) throws SQLException {
         switch (method) {
             case "create":
                 return create(data);

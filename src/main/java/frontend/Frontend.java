@@ -16,6 +16,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -45,7 +49,7 @@ public class Frontend extends HttpServlet {
         responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
         response.getOutputStream().print(responseResult); // отправка ответа
         response.getOutputStream().flush();
-
+        System.out.println(responseResult);
     }
 
     public void doPost(HttpServletRequest request,
@@ -116,9 +120,19 @@ public class Frontend extends HttpServlet {
     public JsonObject getRequestParser ( String data ) {
         JsonObject jsonObject = new JsonObject();
         String strings[] = data.split("&");
+        ArrayList<String> array = new ArrayList<>();
+
         for(int i = 0; i < strings.length; i++) {
             String values[] = strings[i].split("=");
-            jsonObject.addProperty(values[0], values[1]);
+
+            if (jsonObject.get(values[0]) != null) {
+                if (array.size() == 0) array.add(jsonObject.get(values[0]).getAsString());
+                array.add(values[1]);
+                jsonObject.addProperty(values[0], array.toString());
+            } else {
+                array.clear();
+                jsonObject.addProperty(values[0], values[1]);
+            }
         }
         return jsonObject;
     }
