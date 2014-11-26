@@ -40,8 +40,9 @@ public class Threads implements GeneralMethods{
     }
 
 
-    private String details(JsonObject query) {
-        return "ok";
+    private String details(JsonObject query) throws SQLException {
+        System.out.println("Это Thread details");
+        return JsonResponse.createResponse( database.ThreadDetails(query) );
     }
 
     private String list(JsonObject query) {
@@ -81,7 +82,7 @@ public class Threads implements GeneralMethods{
     }
 
     @Override
-    public String delegationCall (String method, JsonObject data) {
+    public String delegationCall (String method, JsonObject data) throws SQLException {
 
         switch (method) {
             case "close":

@@ -406,17 +406,64 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement("INSERT INTO Thread (`forum`, `title`, `isClosed`," +
                 "`user`, `date`, `message`, `slug`, `isDeleted`) VALUES (?,?,?,?,?,?,?,?)",
                 Statement.RETURN_GENERATED_KEYS);
-        stm.setString(1, threadData.get("forum").toString());
-        stm.setString(2, threadData.get("title").toString());
+        stm.setString(1, threadData.get("forum").getAsString());
+        stm.setString(2, threadData.get("title").getAsString());
         stm.setBoolean(3, Boolean.parseBoolean(threadData.get("isClosed").toString()));
-        stm.setString(4, threadData.get("user").toString());
-        stm.setString(5, threadData.get("date").toString());
-        stm.setString(6, threadData.get("message").toString());
-        stm.setString(7, threadData.get("slug").toString());
+        stm.setString(4, threadData.get("user").getAsString());
+        stm.setString(5, threadData.get("date").getAsString());
+        stm.setString(6, threadData.get("message").getAsString());
+        stm.setString(7, threadData.get("slug").getAsString());
         stm.setBoolean(8, Boolean.parseBoolean(threadData.get("isDeleted").toString()));
 
         return exec.execUpdateAndReturnId(stm);
     }
+
+    public JsonObject ThreadDetails(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT `id`,`forum`,`title`,`user`,`date`,`isClosed`,`isDeleted`,`message`,`slug`,`likes`, `points`, `posts`FROM `Thread` WHERE id=?");
+        stm.setInt(1, Integer.valueOf(query.get("thread").getAsString()));
+        JsonObject response = new JsonObject();
+        ResultSet threadDefault = stm.executeQuery();
+        String related;
+
+        if (threadDefault.next()) {
+
+            response.addProperty("date", threadDefault.getString("date"));
+            response.addProperty("id", threadDefault.getInt("id"));
+            response.addProperty("isDeleted", threadDefault.getBoolean("isDeleted"));
+            response.addProperty("isClosed", threadDefault.getBoolean("isClosed"));
+            response.addProperty("message", threadDefault.getString("message"));
+            response.addProperty("points", threadDefault.getInt("points"));
+            response.addProperty("posts", threadDefault.getInt("posts"));
+            response.addProperty("slug", threadDefault.getString("slug"));
+            response.addProperty("title", threadDefault.getString("title"));
+            response.addProperty("likes", threadDefault.getInt("likes"));
+
+            if (query.get("related") != null) {
+                related = query.get("related").getAsString();
+
+                if (related.contains("user")) {
+                    JsonObject userQuery = new JsonObject();
+                    userQuery.addProperty("user", threadDefault.getString("user"));
+                    response.add("user", userDetails(userQuery));
+                } else response.addProperty("user", threadDefault.getString("user"));
+
+                if (related.contains("forum")) {
+                    JsonObject forumQuery = new JsonObject();
+                    forumQuery.addProperty("forum", threadDefault.getString("forum"));
+                    response.add("forum", forumDetails(forumQuery));
+                } else response.addProperty("forum", threadDefault.getString("forum"));
+
+            } else {
+                response.addProperty("user", threadDefault.getString("user"));
+                response.addProperty("forum", threadDefault.getString("forum"));
+            }
+
+        }
+
+        return response;
+    }
+
+
 
     public String clear() throws SQLException {
         JsonObject response = new JsonObject();
