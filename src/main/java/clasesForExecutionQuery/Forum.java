@@ -18,7 +18,7 @@ public class Forum implements GeneralMethods {
     Database database;
     Gson gson;
 
-    public Forum(Database database, Gson gson){
+    public Forum(Database database, Gson gson) {
         this.database = database;
         this.gson = gson;
     }
@@ -28,13 +28,13 @@ public class Forum implements GeneralMethods {
             System.out.println("Это форум  ");
             int id = database.createForum(forumData);
             forumData.addProperty("id", id);
-
             return JsonResponse.createResponse(forumData);
 
         } catch (SQLException e) {
             e.printStackTrace();
+            forumData.addProperty("exception", "An unknown error");
+            return JsonResponse.createResponse(forumData);
         }
-        return "bad";
     }
 
     private String details(JsonObject query) throws SQLException {

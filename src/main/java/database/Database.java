@@ -3,6 +3,7 @@ package database;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.sun.rowset.CachedRowSetImpl;
 
 import java.sql.*;
@@ -173,71 +174,87 @@ public class Database {
 
 
     public int createPost( JsonObject postData ) throws SQLException {
-        SimpleExecutor exec = new SimpleExecutor();
-        PreparedStatement stm = connection.prepareStatement("INSERT INTO Post (`parent`, `isApproved`, `isHighlighted`," +
-                "`isEdited`, `isSpam`, `isDeleted`, `date`, `thread`, `message`, `user`, `forum` ) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                Statement.RETURN_GENERATED_KEYS);
-        stm.setString(1, null);
-        stm.setBoolean(2, Boolean.parseBoolean(postData.get("isApproved").toString()));
-        stm.setBoolean(3, Boolean.parseBoolean(postData.get("isHighlighted").toString()));
-        stm.setBoolean(4, Boolean.parseBoolean(postData.get("isEdited").toString()));
-        stm.setBoolean(5, Boolean.parseBoolean(postData.get("isSpam").toString()));
-        stm.setBoolean(6, Boolean.parseBoolean(postData.get("isDeleted").toString()));
-        stm.setString(7, postData.get("date").getAsString() );
-        stm.setString(8, postData.get("thread").getAsString());
-        stm.setString(9, postData.get("message").getAsString());
-        stm.setString(10, postData.get("user").getAsString() );
-        stm.setString(11, postData.get("forum").getAsString());
+        int idPost;
+        PreparedStatement stmThread = connection.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?");
+        stmThread.setInt(1,  postData.get("thread").getAsInt());
+        if ( stmThread.executeUpdate() == 1 ) {
+            stmThread.close();
+            SimpleExecutor exec = new SimpleExecutor();
+            PreparedStatement stmPost = connection.prepareStatement("INSERT INTO Post (`parent`, `isApproved`, `isHighlighted`," +
+                            "`isEdited`, `isSpam`, `isDeleted`, `date`, `thread`, `message`, `user`, `forum` ) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            stmPost.setString(1, safelyGetStringFromJson(postData, "parent"));
+            stmPost.setBoolean(2, Boolean.parseBoolean(postData.get("isApproved").toString()));
+            stmPost.setBoolean(3, Boolean.parseBoolean(postData.get("isHighlighted").toString()));
+            stmPost.setBoolean(4, Boolean.parseBoolean(postData.get("isEdited").toString()));
+            stmPost.setBoolean(5, Boolean.parseBoolean(postData.get("isSpam").toString()));
+            stmPost.setBoolean(6, Boolean.parseBoolean(postData.get("isDeleted").toString()));
+            stmPost.setString(7, postData.get("date").getAsString());
+            stmPost.setString(8, postData.get("thread").getAsString());
+            stmPost.setString(9, postData.get("message").getAsString());
+            stmPost.setString(10, postData.get("user").getAsString());
+            stmPost.setString(11, postData.get("forum").getAsString());
+            idPost = exec.execUpdateAndReturnId(stmPost);
+        }else idPost = -1;
 
-        return exec.execUpdateAndReturnId(stm);
+        return idPost;
     }
 
     public JsonObject postDetails(JsonObject query) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement("SELECT * FROM Post WHERE id = ?");
-        stm.setString(1, query.get("post").getAsString());
+        PreparedStatement stm = connection.prepareStatement("SELECT p.date, p.dislikes, p.id, p.isApproved, p.isDeleted, p.isEdited, " +
+                "p.isHighlighted, p.isSpam, p.likes, p.message, p.parent, p.points, " +
+                "p.forum, p.thread, p.user, t.isDeleted FROM Post p INNER JOIN Thread t ON p.thread = t.id WHERE p.id = ?");
+        int id = query.get("post").getAsInt() ;
+        stm.setInt(1, id);
         ResultSet resultSet = stm.executeQuery();
         JsonObject response = new JsonObject();
-        HashMap<String, String> tempQuery = new HashMap<>();
         String related;
 
-        if (resultSet.next()) {
-            response.addProperty("date", resultSet.getString("date"));
-            response.addProperty("dislikes", resultSet.getInt("dislikes"));
-            response.addProperty("id", resultSet.getInt("id"));
-            response.addProperty("isApproved", resultSet.getBoolean("isApproved"));
-            response.addProperty("isDeleted", resultSet.getBoolean("isDeleted"));
-            response.addProperty("isEdited", resultSet.getBoolean("isEdited"));
-            response.addProperty("isHighlighted", resultSet.getBoolean("isHighlighted"));
-            response.addProperty("isSpam", resultSet.getBoolean("isSpam"));
-            response.addProperty("likes", resultSet.getInt("likes"));
-            response.addProperty("message", resultSet.getString("message"));
-            response.addProperty("parent", resultSet.getString("parent") == null ? null : resultSet.getInt("parent"));
-            response.addProperty("points", resultSet.getInt("points"));
+        if (id > 0) {
+            if (resultSet.next()) {
+                response.addProperty("date", resultSet.getString("p.date"));
+                response.addProperty("dislikes", resultSet.getInt("p.dislikes"));
+                response.addProperty("id", resultSet.getInt("p.id"));
+                response.addProperty("isApproved", resultSet.getBoolean("p.isApproved"));
+                response.addProperty("isDeleted", resultSet.getBoolean("t.isDeleted") ? true : resultSet.getBoolean("p.isDeleted"));
+                response.addProperty("isEdited", resultSet.getBoolean("p.isEdited"));
+                response.addProperty("isHighlighted", resultSet.getBoolean("p.isHighlighted"));
+                response.addProperty("isSpam", resultSet.getBoolean("p.isSpam"));
+                response.addProperty("likes", resultSet.getInt("p.likes"));
+                response.addProperty("message", resultSet.getString("p.message"));
+                response.addProperty("parent", resultSet.getString("p.parent") == null ? null : resultSet.getInt("p.parent"));
+                response.addProperty("points", resultSet.getInt("p.points"));
 
 
+                if (query.get("related") != null) {
+                    related = query.get("related").getAsString();
 
-            if (query.get("related") != null) {
-                related = query.get("related").getAsString();
+                    if (related.contains("forum")) {
+                        JsonObject forumQuery = new JsonObject();
+                        forumQuery.addProperty("forum", resultSet.getString("p.forum"));
+                        response.add("forum", forumDetails(forumQuery));
+                    } else response.addProperty("forum", resultSet.getString("p.forum"));
 
-                if (related.contains("forum")) {
-                    response.addProperty("forum", resultSet.getString("forum"));
-                }else response.addProperty("forum", resultSet.getString("forum"));
+                    if (related.contains("thread")) {
+                        JsonObject threadQuery = new JsonObject();
+                        threadQuery.addProperty("thread", resultSet.getInt("p.thread"));
+                        response.add("thread", threadDetails(threadQuery));
+                    } else response.addProperty("thread", resultSet.getInt("p.thread"));
 
-                if (related.contains("thread")) {
-                    response.addProperty("thread", resultSet.getInt("thread"));
-                }else response.addProperty("thread", resultSet.getInt("thread"));
+                    if (related.contains("user")) {
+                        JsonObject userQuery = new JsonObject();
+                        userQuery.addProperty("user", resultSet.getString("p.user"));
+                        response.add("user", userDetails(userQuery));
+                    } else response.addProperty("user", resultSet.getString("p.user"));
 
-                if (related.contains("user")) {
-                    response.addProperty("user", resultSet.getString("user"));
-                }else response.addProperty("user", resultSet.getString("user"));
+                } else {
+                    response.addProperty("forum", resultSet.getString("p.forum"));
+                    response.addProperty("thread", resultSet.getInt("p.thread"));
+                    response.addProperty("user", resultSet.getString("p.user"));
+                }
 
-            } else {
-                response.addProperty("forum", resultSet.getString("forum"));
-                response.addProperty("thread", resultSet.getInt("thread"));
-                response.addProperty("user", resultSet.getString("user"));
             }
-
-        }
+        } else response.addProperty("exception", "not found");
         resultSet.close();
         stm.close();
 
@@ -245,20 +262,27 @@ public class Database {
     }
 
     public JsonObject postRemove(JsonObject query) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement("UPDATE Post SET isDeleted = true WHERE id = ?");
-        int id = Integer.valueOf( query.get("post").getAsString() );
-        stm.setInt(1, id);
-        stm.executeUpdate();
-        JsonObject details = new JsonObject();
-        details.addProperty("post", id);
-        return postDetails(details);
+        PreparedStatement stm = connection.prepareStatement("UPDATE Post p INNER JOIN Thread t ON p.thread = t.id SET p.isDeleted = true, " +
+                "t.posts = t.posts - 1 WHERE p.id = ? AND p.isDeleted = false");
+        int id = query.get("post").getAsInt();
+        if (id > 0) {
+            stm.setInt(1, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
+
+        return query;
     }
 
     public JsonObject postRestore(JsonObject query) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement("UPDATE Post SET isDeleted = false WHERE id = ?");
-        int id = Integer.valueOf( query.get("post").getAsString() );
-        stm.setInt(1, id);
-        stm.executeUpdate();
+        PreparedStatement stm = connection.prepareStatement("UPDATE Post p INNER JOIN Thread t ON p.thread = t.id " +
+                "SET p.isDeleted = false, t.posts = t.posts + 1 WHERE p.id = ? AND p.isDeleted = true");
+        int id = query.get("post").getAsInt();
+        if (id > 0) {
+            stm.setInt(1, id);
+            stm.executeUpdate();
+        }else query.addProperty("exception", "not found");
+        stm.close();
 
         return query;
     }
@@ -267,26 +291,54 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement("UPDATE Post SET message = ? WHERE id = ?");
         int id = Integer.valueOf( query.get("post").getAsString() );
         stm.setString(1, query.get("message").getAsString() );
-        stm.setInt(2, id);
-        stm.executeUpdate();
+        if (id >= 0) {
+            stm.setInt(2, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
 
         return query;
+    }
+
+    public JsonObject postVote(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Post SET likes = likes + ?, dislikes = dislikes - ?, " +
+                "points = likes - dislikes WHERE id = ? AND isDeleted = false");
+        int id = Integer.valueOf( query.get("post").getAsString() );
+        if ( Integer.valueOf( query.get("vote").getAsString() ) > 0 ) {
+            stm.setString(1, query.get("vote").getAsString() );
+            stm.setString(2, "0");
+        } else {
+            stm.setString(1, "0" );
+            stm.setString(2, query.get("vote").getAsString());
+        }
+
+        stm.setInt(3, id);
+        stm.executeUpdate();
+        stm.close();
+
+        return postDetails(query);
     }
 
 
 
     public int createUser(JsonObject userData) throws SQLException {
         SimpleExecutor exec = new SimpleExecutor();
+        int id;
         PreparedStatement stm = connection.prepareStatement("INSERT INTO User (`isAnonymous`, `username`, `about`," +
                 "`name`, `email`) VALUES (?, ?, ?, ?, ?)",
                 Statement.RETURN_GENERATED_KEYS);
         stm.setBoolean(1, Boolean.parseBoolean(userData.get("isAnonymous").getAsString()));
-        stm.setString(2, !userData.get("username").toString().equals("null") ? userData.get("username").getAsString() : null );
-        stm.setString(3, !userData.get("about").toString().equals("null") ? userData.get("about").getAsString() : null);
-        stm.setString(4, !userData.get("name").toString().equals("null") ? userData.get("name").getAsString() : null);
+        stm.setString(2, safelyGetStringFromJson(userData, "username") );
+        stm.setString(3, safelyGetStringFromJson(userData, "about") );
+        stm.setString(4, safelyGetStringFromJson(userData, "name") );
         stm.setString(5, userData.get("email").getAsString());
+        try {
+            id = exec.execUpdateAndReturnId(stm);
+        }catch (MySQLIntegrityConstraintViolationException e) {
+            id = -1;
+        }
 
-        return exec.execUpdateAndReturnId(stm);
+        return id;
     }
 
     public JsonObject userDetails(JsonObject query) throws SQLException {
@@ -296,8 +348,7 @@ public class Database {
         CachedRowSetImpl subscriptions = new CachedRowSetImpl();
         JsonObject jUser = new JsonObject();
         ArrayList<String> temp = new ArrayList<String>();
-        String userEmail;
-        userEmail = query.get("user").getAsString();
+        String userEmail = query.get("user").getAsString();
         //System.out.println(userEmail);
 
         PreparedStatement stm = connection.prepareStatement("SELECT * FROM User WHERE email = ? ");
@@ -318,12 +369,11 @@ public class Database {
             while (followers.next()) {
                 temp.add(followers.getString("followers"));
             }
-
-            stm = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
             jUser.addProperty("about", User.getString("about"));
             jUser.addProperty("email", User.getString("email"));
             jUser.add("followers", gson.toJsonTree(temp));
 
+            stm = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
             stm.setString(1, userEmail);
             resultSet = stm.executeQuery();
             following.populate(resultSet);
@@ -348,7 +398,7 @@ public class Database {
             ArrayList<Integer> temp2 = new ArrayList<Integer>();
 
             while (subscriptions.next()) {
-                temp2.add(subscriptions.getInt(1));
+                temp2.add(subscriptions.getInt("thread_id"));
             }
             jUser.add("subscriptions", gson.toJsonTree(temp2));
             jUser.addProperty("username", User.getString("username"));
@@ -360,39 +410,37 @@ public class Database {
 
     public JsonObject userFollow(JsonObject query) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("INSERT INTO User_followers (`user`, `followers`) VALUES (?, ?)");
-        String follower = query.get("follower").getAsString();
-        stm.setString(1, follower);
-        stm.setString(2, query.get("followee").getAsString());
+        String followee = query.get("followee").getAsString();
+        stm.setString(1, followee);
+        stm.setString(2, query.get("follower").getAsString());
         stm.executeUpdate();
         stm.close();
         JsonObject detalis = new JsonObject();
-        detalis.addProperty("user" ,follower);
+        detalis.addProperty("user" ,followee);
         return userDetails(detalis);
     }
 
     public JsonObject userUnfollow(JsonObject query) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement("DELETE FROM User_followers WHERE user = ?");
-        String follower = query.get("follower").getAsString();
-        stm.setString(1, follower);
+        PreparedStatement stm = connection.prepareStatement("DELETE FROM User_followers WHERE user = ? AND followers = ?");
+        String followee = query.get("followee").getAsString();
+        stm.setString(1, followee);
+        stm.setString(2, query.get("follower").getAsString());
         stm.executeUpdate();
         stm.close();
         JsonObject detalis = new JsonObject();
-        detalis.addProperty("user", follower);
+        detalis.addProperty("user", followee);
         return userDetails(detalis);
     }
 
     public JsonObject userUpdate(JsonObject query) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("UPDATE User SET about = ?, name = ? WHERE email = ?");
-        String user = query.get("user").getAsString();
         stm.setString(1, query.get("about").getAsString());
         stm.setString(2, query.get("name").getAsString());
-        stm.setString(3, user);
+        stm.setString(3, query.get("user").getAsString());
         stm.executeUpdate();
         stm.close();
-        JsonObject detalis = new JsonObject();
-        detalis.addProperty("user", user);
 
-        return userDetails(detalis);
+        return userDetails(query);
     }
 
 
@@ -408,19 +456,19 @@ public class Database {
                 Statement.RETURN_GENERATED_KEYS);
         stm.setString(1, threadData.get("forum").getAsString());
         stm.setString(2, threadData.get("title").getAsString());
-        stm.setBoolean(3, Boolean.parseBoolean(threadData.get("isClosed").toString()));
+        stm.setBoolean(3, threadData.get("isClosed").getAsBoolean());
         stm.setString(4, threadData.get("user").getAsString());
         stm.setString(5, threadData.get("date").getAsString());
         stm.setString(6, threadData.get("message").getAsString());
         stm.setString(7, threadData.get("slug").getAsString());
-        stm.setBoolean(8, Boolean.parseBoolean(threadData.get("isDeleted").toString()));
+        stm.setBoolean(8, threadData.get("isDeleted").getAsBoolean());
 
         return exec.execUpdateAndReturnId(stm);
     }
 
-    public JsonObject ThreadDetails(JsonObject query) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement("SELECT `id`,`forum`,`title`,`user`,`date`,`isClosed`,`isDeleted`,`message`,`slug`,`likes`, `points`, `posts`FROM `Thread` WHERE id=?");
-        stm.setInt(1, Integer.valueOf(query.get("thread").getAsString()));
+    public JsonObject threadDetails(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT `id`,`forum`,`title`,`user`,`date`,`isClosed`,`isDeleted`,`message`,`slug`,`likes`, `points`, `posts`, `dislikes` FROM `Thread` WHERE id=?");
+        stm.setInt(1, Integer.valueOf(query.get("thread").getAsString()) );
         JsonObject response = new JsonObject();
         ResultSet threadDefault = stm.executeQuery();
         String related;
@@ -437,6 +485,7 @@ public class Database {
             response.addProperty("slug", threadDefault.getString("slug"));
             response.addProperty("title", threadDefault.getString("title"));
             response.addProperty("likes", threadDefault.getInt("likes"));
+            response.addProperty("dislikes", threadDefault.getInt("dislikes"));
 
             if (query.get("related") != null) {
                 related = query.get("related").getAsString();
@@ -463,7 +512,117 @@ public class Database {
         return response;
     }
 
+    public JsonObject threadUpdate(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET message = ?, slug = ? WHERE id = ? AND isDeleted = false");
+        int id = Integer.valueOf( query.get("thread").getAsString() );
+        stm.setString(1, query.get("message").getAsString() );
+        stm.setString(2, query.get("slug").getAsString() );
+        if (id >= 0) {
+            stm.setInt(3, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
 
+        return threadDetails(query);
+    }
+
+    public JsonObject threadClose(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isClosed = true WHERE id = ?");
+        int id = Integer.valueOf( query.get("thread").getAsString() );
+        if (id >= 0) {
+            stm.setInt(1, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
+
+        return query;
+    }
+
+    public JsonObject threadOpen(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isClosed = false WHERE id = ?");
+        int id = Integer.valueOf( query.get("thread").getAsString() );
+        if (id >= 0) {
+            stm.setInt(1, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
+
+        return query;
+    }
+
+    public JsonObject threadRemove(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = true WHERE id = ?");
+        int id = query.get("thread").getAsInt();
+        if (id > 0) {
+            stm.setInt(1, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
+
+        return query;
+    }
+
+    public JsonObject threadRestore(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = false WHERE id = ? ");
+        int id = query.get("thread").getAsInt();
+        if (id > 0) {
+            stm.setInt(1, id);
+            stm.executeUpdate();
+        } else query.addProperty("exception", "not found");
+        stm.close();
+
+        return query;
+    }
+
+    public JsonObject threadVote(JsonObject query) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET likes = likes + ?, dislikes = dislikes - ?, " +
+                "points = likes - dislikes WHERE id = ?");
+        int id = query.get("thread").getAsInt();
+        if ( !query.get("vote").toString().equals("null") ) {
+            if ( query.get("vote").getAsInt()  > 0 ) {
+                stm.setString(1, query.get("vote").getAsString() );
+                stm.setString(2, "0");
+            } else {
+                stm.setString(1, "0" );
+                stm.setString(2, query.get("vote").getAsString());
+            }
+
+            stm.setInt(3, id);
+            stm.executeUpdate();
+        }
+        stm.close();
+
+        return threadDetails(query);
+    }
+
+    public JsonObject threadSubscribe(JsonObject query) throws SQLException {
+        int id = query.get("thread").getAsInt();
+        if ( id > 0) {
+            PreparedStatement stm = connection.prepareStatement("INSERT INTO Thread_followers(thread_id, follower_email) " +
+                    "VALUES (?,?)");
+            stm.setInt(1, id);
+            stm.setString(2, safelyGetStringFromJson(query, "user"));
+            stm.executeUpdate();
+            return query;
+        } else {
+            query.addProperty("exception", "not found");
+            return query;
+        }
+    }
+
+    public JsonObject threadUnsubscribe(JsonObject query) throws SQLException {
+        int id = query.get("thread").getAsInt();
+        if ( id > 0) {
+            PreparedStatement stm = connection.prepareStatement("DELETE FROM Thread_followers WHERE thread_id = ? AND follower_email = ? ");
+            stm.setInt(1, id);
+            stm.setString(2, safelyGetStringFromJson(query, "user"));
+            stm.executeUpdate();
+            return query;
+        } else {
+            query.addProperty("exception", "not found");
+            return query;
+        }
+    }
 
     public String clear() throws SQLException {
         JsonObject response = new JsonObject();
@@ -473,12 +632,21 @@ public class Database {
         stm.execute("TRUNCATE Thread");
         stm.execute("TRUNCATE Post");
         stm.execute("TRUNCATE User_followers");
+        stm.execute("TRUNCATE Thread_followers");
         stm.close();
 
         response.addProperty("code", 0);
         response.addProperty("response", "ok");
 
         return response.toString();
+    }
+
+    public String safelyGetStringFromJson(JsonObject json, String name) {
+        if (json.get(name) != null) {
+            if (json.get(name).toString().equals("null")) {
+                return null;
+            } else return json.get(name).getAsString();
+        } else return null;
     }
 
     public ArrayList followers () {

@@ -22,16 +22,19 @@ public class User implements GeneralMethods{
     }
 
     private String create(JsonObject userData) {
+        int id ;
         try {
             System.out.println("Это юзер  " + userData.toString() );
-            int id = database.createUser(userData);
-            userData.addProperty("id", id);
+            id = database.createUser(userData);
+            if (id != -1) {
+                userData.addProperty("id", id);
+            } else userData.addProperty("exception", "user already exists");
             return JsonResponse.createResponse(userData);
-
         } catch (SQLException e) {
             e.printStackTrace();
+            userData.addProperty("exception", "An unknown error");
+            return JsonResponse.createResponse(userData);
         }
-        return "bad";
     }
 
     private String details(JsonObject query) throws SQLException {

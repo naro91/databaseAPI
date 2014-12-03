@@ -26,14 +26,17 @@ public class Post implements GeneralMethods{
             System.out.println("Это Post create");
             System.out.println(postData);
             int id = database.createPost(postData);
-            postData.addProperty("id", id);
-            postData.addProperty("parent", "null");
+            if (id != -1) {
+                postData.addProperty("id", id);
+            } else postData.addProperty("exception", "invalid query");
+
             return JsonResponse.createResponse(postData);
 
         } catch (SQLException e) {
             e.printStackTrace();
+            postData.addProperty("exception", "An unknown error");
+            return JsonResponse.createResponse(postData);
         }
-        return "bad";
     }
 
     private String details(JsonObject query) throws SQLException {
@@ -61,8 +64,8 @@ public class Post implements GeneralMethods{
         return JsonResponse.createResponse(database.postUpdate(query));
     }
 
-    private String vote(JsonObject query) {
-        return "ok";
+    private String vote(JsonObject query) throws SQLException {
+        return JsonResponse.createResponse( database.postVote(query) );
     }
 
     @Override

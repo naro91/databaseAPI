@@ -28,21 +28,22 @@ public class Threads implements GeneralMethods{
             int id = database.createThread(threadData);
             threadData.addProperty("id", id);
             return JsonResponse.createResponse(threadData);
-
         } catch (SQLException e) {
             e.printStackTrace();
+            threadData.addProperty("exception", "An unknown error");
+            return JsonResponse.createResponse(threadData);
         }
-        return "bad";
     }
 
-    private String close(JsonObject query) {
-        return "ok";
+    private String close(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Close");
+        return JsonResponse.createResponse(database.threadClose(query));
     }
 
 
     private String details(JsonObject query) throws SQLException {
         System.out.println("Это Thread details");
-        return JsonResponse.createResponse( database.ThreadDetails(query) );
+        return JsonResponse.createResponse( database.threadDetails(query) );
     }
 
     private String list(JsonObject query) {
@@ -53,32 +54,39 @@ public class Threads implements GeneralMethods{
         return "ok";
     }
 
-    private String open(JsonObject query) {
-        return "ok";
+    private String open(JsonObject query) throws SQLException {
+        System.out.println("Это Thread open");
+        return JsonResponse.createResponse(database.threadOpen(query));
     }
 
-    private String remove(JsonObject query) {
-        return "ok";
+    private String remove(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Remove");
+        return JsonResponse.createResponse(database.threadRemove(query));
     }
 
-    private String restore(JsonObject query) {
-        return "ok";
+    private String restore(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Restore");
+        return JsonResponse.createResponse(database.threadRestore(query));
     }
 
-    private String subscribe(JsonObject query) {
-        return "ok";
+    private String subscribe(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Subscribe");
+        return JsonResponse.createResponse(database.threadSubscribe(query));
     }
 
-    private String unsubscribe(JsonObject query) {
-        return "ok";
+    private String unsubscribe(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Unsubscribe");
+        return JsonResponse.createResponse(database.threadUnsubscribe(query));
     }
 
-    private String update(JsonObject query) {
-        return "ok";
+    private String update(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Update");
+        return JsonResponse.createResponse(database.threadUpdate(query));
     }
 
-    private String vote(JsonObject query) {
-        return "ok";
+    private String vote(JsonObject query) throws SQLException {
+        System.out.println("Это Thread Vote");
+        return JsonResponse.createResponse(database.threadVote(query));
     }
 
     @Override
