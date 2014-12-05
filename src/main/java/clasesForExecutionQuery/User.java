@@ -24,7 +24,7 @@ public class User implements GeneralMethods{
     private String create(JsonObject userData) {
         int id ;
         try {
-            System.out.println("Это юзер  " + userData.toString() );
+            System.out.println("Это User  ");
             id = database.createUser(userData);
             if (id != -1) {
                 userData.addProperty("id", id);

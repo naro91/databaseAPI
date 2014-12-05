@@ -1,30 +1,47 @@
 package util;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import java.util.Objects;
+
 
 /**
  * Created by narek on 06.11.14.
  */
 public class JsonResponse {
-    public static String createResponse(JsonObject data) {
+    public static String createResponse(Object responseFromDatabase) {
         JsonObject requestResult = new JsonObject();
-        if (data.get("exception") == null) {
-            requestResult.addProperty("code", 0);
-            requestResult.add("response", data);
+        JsonObject data;
+        JsonArray dataArray;
+        if (responseFromDatabase instanceof JsonObject) {
+            data = (JsonObject) responseFromDatabase;
+            if (data.get("exception") == null) {
+                requestResult.addProperty("code", 0);
+                requestResult.add("response", data.get("response") == null ? data : data.get("response"));
+            } else {
+                switch (data.get("exception").getAsString()) {
+                    case "not found":
+                        requestFailBuilder(requestResult, 1, "the requested object was not found");
+                        break;
+                    case "invalid query":
+                        requestFailBuilder(requestResult, 3, "invalid query");
+                        break;
+                    case "user already exists":
+                        requestFailBuilder(requestResult, 5, "user already exists");
+                        break;
+                    default:
+                        requestFailBuilder(requestResult, 4, "An unknown error");
+                }
+            }
         } else {
-            switch ( data.get("exception").getAsString() ) {
-                case "not found" :
-                    requestFailBuilder(requestResult, 1, "the requested object was not found");
-                    break;
-                case "invalid query" :
-                    requestFailBuilder(requestResult, 3, "invalid query");
-                    break;
-                case "user already exists" :
-                    requestFailBuilder(requestResult, 5, "user already exists");
-                    break;
-                default: requestFailBuilder(requestResult, 4, "An unknown error");
+            if (responseFromDatabase instanceof JsonArray) {
+                dataArray = (JsonArray) responseFromDatabase;
+                requestResult.addProperty("code", 0);
+                requestResult.add("response", dataArray);
             }
         }
+
         return requestResult.toString();
     }
 
