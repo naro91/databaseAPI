@@ -43,20 +43,23 @@ public class User implements GeneralMethods{
     }
 
     private String follow(JsonObject query) throws SQLException {
-        System.out.println("Это follow User");
+        System.out.println("Это User Follow");
         return JsonResponse.createResponse(database.userFollow(query));
     }
 
-    private String listFollowers(JsonObject query) {
-        return "Ok";
+    private String listFollowers(JsonObject query) throws SQLException {
+        System.out.println("Это User ListFollowers" );
+        return JsonResponse.createResponse(database.userListFollowers(query));
     }
 
-    private String listFollowing(JsonObject query) {
-        return "Ok";
+    private String listFollowing(JsonObject query) throws SQLException {
+        System.out.println("Это User ListFolloweing" );
+        return JsonResponse.createResponse(database.userListFollowing(query));
     }
 
-    private String listPosts(JsonObject query) {
-        return "Ok";
+    private String listPosts(JsonObject query) throws SQLException {
+        System.out.println("Это User ListPost" );
+        return JsonResponse.createResponse(database.userListPosts(query));
     }
 
     private String unfollow(JsonObject query) throws SQLException {

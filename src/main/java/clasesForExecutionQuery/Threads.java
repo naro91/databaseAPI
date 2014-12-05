@@ -46,12 +46,14 @@ public class Threads implements GeneralMethods{
         return JsonResponse.createResponse( database.threadDetails(query) );
     }
 
-    private String list(JsonObject query) {
-        return "ok";
+    private String list(JsonObject query) throws SQLException {
+        System.out.println("Это Thread List");
+        return JsonResponse.createResponse(database.threadList(query));
     }
 
-    private String listPosts(JsonObject query) {
-        return "ok";
+    private String listPosts(JsonObject query) throws SQLException {
+        System.out.println("Это Thread List");
+        return JsonResponse.createResponse(database.threadListPosts(query));
     }
 
     private String open(JsonObject query) throws SQLException {

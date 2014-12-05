@@ -3,8 +3,6 @@ package util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.util.Objects;
-
 
 /**
  * Created by narek on 06.11.14.

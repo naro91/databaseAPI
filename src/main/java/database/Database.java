@@ -64,6 +64,9 @@ public class Database {
         return connection;
     }
 
+
+
+
     public int createForum(JsonObject forumDate) throws SQLException {
         SimpleExecutor exec = new SimpleExecutor();
         PreparedStatement stm = connection.prepareStatement("INSERT INTO Forum (`user`, `name`, `short_name`) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -248,6 +251,10 @@ public class Database {
         return threadArray;
     }
 
+
+
+
+
     public int createPost( JsonObject postData ) throws SQLException {
         int idPost;
         PreparedStatement stmThread = connection.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?");
@@ -393,6 +400,38 @@ public class Database {
         return postDetails(query);
     }
 
+    public Object postList(JsonObject query) throws SQLException {
+        String querySqlmass[] = { "SELECT p.id FROM Post p WHERE p.forum = ? AND p.date > ? ORDER BY p.date DESC LIMIT ?",
+                "SELECT p.id FROM Post p WHERE p.forum = ? AND p.date > ? ORDER BY p.date ASC LIMIT ?",
+                "SELECT p.id FROM Post p WHERE p.thread = ? AND p.date > ? ORDER BY p.date DESC LIMIT ?",
+                "SELECT p.id FROM Post p WHERE p.thread = ? AND p.date > ? ORDER BY p.date ASC LIMIT ?"};
+        String querySql;
+        JsonObject detalisPostQuery = new JsonObject();
+        JsonArray postArray = new JsonArray();
+        Boolean isForum = query.get("forum") != null;
+        if (query.get("order") != null) {
+            if (isForum) {
+                querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
+            }else querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[2] : querySqlmass[2];
+        } else if (isForum) {
+            querySql = querySqlmass[0];
+        }else querySql = querySqlmass[2];
+        PreparedStatement stm = connection.prepareStatement(querySql);
+        stm.setString(1, isForum ? query.get("forum").getAsString() : query.get("thread").getAsString());
+        stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        ResultSet postsResultSet = stm.executeQuery();
+
+        while ( postsResultSet.next() ){
+            detalisPostQuery.addProperty("post", postsResultSet.getString("p.id"));
+            postArray.add(postDetails(detalisPostQuery));
+        }
+        postsResultSet.close();
+        stm.close();
+
+        return postArray;
+    }
+
 
 
     public int createUser(JsonObject userData) throws SQLException {
@@ -517,9 +556,85 @@ public class Database {
         return userDetails(query);
     }
 
+    public Object userListFollowers(JsonObject query) throws SQLException {
+        String querySqlmass[] = { "SELECT uf.followers FROM User_followers uf LEFT JOIN User u ON uf.followers = u.email WHERE uf.user = ? " +
+                "AND u.id >= ? ORDER BY u.name DESC LIMIT ?",
+                "SELECT uf.followers FROM User_followers uf LEFT JOIN User u ON uf.followers = u.email WHERE uf.user = ? " +
+                        "AND u.id >= ? ORDER BY u.name ASC LIMIT ?"};
+        String querySql;
+        JsonObject detalisUserQuery = new JsonObject();
+        JsonArray usersArray = new JsonArray();
+        if (query.get("order") != null) {
+            querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
+        } else  querySql = querySqlmass[0];
+        PreparedStatement stm = connection.prepareStatement(querySql);
+        stm.setString(1, query.get("user").getAsString());
+        stm.setInt(2, query.get("since_id") != null ? query.get("since_id").getAsInt() : 0);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        ResultSet usersResultSet = stm.executeQuery();
 
+        while ( usersResultSet.next() ){
+            detalisUserQuery.addProperty("user", usersResultSet.getString("uf.followers"));
+            usersArray.add(userDetails(detalisUserQuery));
+        }
+        usersResultSet.close();
+        stm.close();
 
+        return usersArray;
+    }
 
+    public Object userListFollowing(JsonObject query) throws SQLException {
+        String querySqlmass[] = { "SELECT uf.user FROM User_followers uf LEFT JOIN User u ON uf.followers = u.email WHERE uf.followers = ? " +
+                "AND u.id >= ? ORDER BY u.name DESC LIMIT ?",
+                "SELECT uf.user FROM User_followers uf LEFT JOIN User u ON uf.followers = u.email WHERE uf.followers = ? " +
+                        "AND u.id >= ? ORDER BY u.name ASC LIMIT ?"};
+        String querySql;
+        JsonObject detalisUserQuery = new JsonObject();
+        JsonArray usersArray = new JsonArray();
+        if (query.get("order") != null) {
+            querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
+        } else  querySql = querySqlmass[0];
+        PreparedStatement stm = connection.prepareStatement(querySql);
+        stm.setString(1, query.get("user").getAsString());
+        stm.setInt(2, query.get("since_id") != null ? query.get("since_id").getAsInt() : 0);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        ResultSet usersResultSet = stm.executeQuery();
+
+        while ( usersResultSet.next() ){
+            detalisUserQuery.addProperty("user", usersResultSet.getString("uf.user"));
+            usersArray.add(userDetails(detalisUserQuery));
+        }
+        usersResultSet.close();
+        stm.close();
+
+        return usersArray;
+    }
+
+    public Object userListPosts(JsonObject query) throws SQLException {
+        String querySqlmass[] = { "SELECT p.id FROM Post p WHERE p.user = ? AND p.date > ? ORDER BY p.date DESC LIMIT ?",
+                "SELECT p.id FROM Post p WHERE p.user = ? AND p.date > ? ORDER BY p.date ASC LIMIT ?"};
+        String querySql;
+        JsonObject detalisPostQuery = new JsonObject();
+        JsonArray postArray = new JsonArray();
+        if (query.get("order") != null) {
+            querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
+        } else  querySql = querySqlmass[0];
+        PreparedStatement stm = connection.prepareStatement(querySql);
+        stm.setString(1, query.get("user").getAsString());
+        stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        ResultSet postsResultSet = stm.executeQuery();
+
+        while ( postsResultSet.next() ){
+            detalisPostQuery.addProperty("post", postsResultSet.getString("p.id"));
+            if (query.get("related") != null) detalisPostQuery.addProperty("related", query.get("related").getAsString());
+            postArray.add(postDetails(detalisPostQuery));
+        }
+        postsResultSet.close();
+        stm.close();
+
+        return postArray;
+    }
 
 
 
@@ -631,7 +746,7 @@ public class Database {
 
     public JsonObject threadRemove(JsonObject query) throws SQLException {
         int id = query.get("thread").getAsInt();
-        if (id > 0) {
+        if (id >= 0) {
             PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = true WHERE id = ?");
             stm.setInt(1, id);
             stm.executeUpdate();
@@ -647,7 +762,7 @@ public class Database {
 
     public JsonObject threadRestore(JsonObject query) throws SQLException {
         int id = query.get("thread").getAsInt();
-        if (id > 0) {
+        if (id >= 0) {
             PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = false WHERE id = ?");
             stm.setInt(1, id);
             stm.executeUpdate();
@@ -711,6 +826,47 @@ public class Database {
         }
     }
 
+    public Object threadList(JsonObject query) throws SQLException {
+        String querySqlmass[] = { "SELECT t.id FROM Thread t WHERE t.forum = ? AND t.date > ? ORDER BY t.date DESC LIMIT ?",
+                "SELECT t.id FROM Thread t WHERE t.forum = ? AND t.date > ? ORDER BY t.date ASC LIMIT ?",
+                "SELECT t.id FROM Thread t WHERE t.user = ? AND t.date > ? ORDER BY t.date DESC LIMIT ?",
+                "SELECT t.id FROM Thread t WHERE t.user = ? AND t.date > ? ORDER BY t.date ASC LIMIT ?"};
+        String querySql;
+        JsonObject detalisThreadQuery = new JsonObject();
+        JsonArray threadArray = new JsonArray();
+        Boolean isForum = (query.get("forum") != null);
+        if (query.get("order") != null) {
+            if (isForum) {
+                querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
+            } else querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[3] : querySqlmass[2];
+        } else {
+            if (isForum) {
+                querySql = querySqlmass[0];
+            }else querySql = querySqlmass[3];
+        }
+        PreparedStatement stm = connection.prepareStatement(querySql);
+        stm.setString(1, isForum ? query.get("forum").getAsString() : query.get("user").getAsString());
+        stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        ResultSet threadResultSet = stm.executeQuery();
+
+        while ( threadResultSet.next() ){
+            detalisThreadQuery.addProperty("thread", threadResultSet.getString("t.id"));
+            if (query.get("related") != null) detalisThreadQuery.addProperty("related", query.get("related").getAsString());
+            threadArray.add(threadDetails(detalisThreadQuery));
+        }
+        threadResultSet.close();
+        stm.close();
+
+        return threadArray;
+    }
+
+    public Object threadListPosts(JsonObject query) throws SQLException {
+        JsonArray threadArray = new JsonArray();
+
+        return threadArray;
+    }
+
     public String clear() throws SQLException {
         JsonObject response = new JsonObject();
         Statement stm = connection.createStatement();
@@ -734,11 +890,6 @@ public class Database {
                 return null;
             } else return json.get(name).getAsString();
         } else return null;
-    }
-
-    public ArrayList followers () {
-
-        return null;
     }
 
 }

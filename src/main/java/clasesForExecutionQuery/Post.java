@@ -45,8 +45,9 @@ public class Post implements GeneralMethods{
         return JsonResponse.createResponse(database.postDetails(query));
     }
 
-    private String list(JsonObject query) {
-        return "ok";
+    private String list(JsonObject query) throws SQLException {
+        System.out.println("Это Post List");
+        return JsonResponse.createResponse(database.postList(query));
     }
 
     private String remove(JsonObject query) throws SQLException {
