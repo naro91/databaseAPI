@@ -747,7 +747,7 @@ public class Database {
     public JsonObject threadRemove(JsonObject query) throws SQLException {
         int id = query.get("thread").getAsInt();
         if (id >= 0) {
-            PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = true WHERE id = ?");
+            PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = true, posts = 0 WHERE id = ?");
             stm.setInt(1, id);
             stm.executeUpdate();
             stm.close();
@@ -762,13 +762,15 @@ public class Database {
 
     public JsonObject threadRestore(JsonObject query) throws SQLException {
         int id = query.get("thread").getAsInt();
+        int posts;
         if (id >= 0) {
-            PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isDeleted = false WHERE id = ?");
+            PreparedStatement stm = connection.prepareStatement("UPDATE Post SET isDeleted = false WHERE thread = ?");
             stm.setInt(1, id);
-            stm.executeUpdate();
+            posts = stm.executeUpdate();
             stm.close();
-            stm = connection.prepareStatement("UPDATE Post SET isDeleted = false WHERE thread = ?");
-            stm.setInt(1, id);
+            stm = connection.prepareStatement("UPDATE Thread SET isDeleted = false, posts = ? WHERE id = ?");
+            stm.setInt(1, posts);
+            stm.setInt(2, id);
             stm.executeUpdate();
             stm.close();
         } else query.addProperty("exception", "not found");
@@ -862,9 +864,28 @@ public class Database {
     }
 
     public Object threadListPosts(JsonObject query) throws SQLException {
-        JsonArray threadArray = new JsonArray();
+        String querySqlmass[] = { "SELECT p.id FROM Post p WHERE p.thread = ? AND p.date > ? ORDER BY p.id DESC LIMIT ?",
+                "SELECT p.id FROM Post p WHERE p.thread = ? AND p.date > ? ORDER BY p.id ASC LIMIT ?"};
+        String querySql;
+        JsonObject detalisPostQuery = new JsonObject();
+        JsonArray postArray = new JsonArray();
+        if (query.get("order") != null) {
+            querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
+        } else  querySql = querySqlmass[0];
+        PreparedStatement stm = connection.prepareStatement(querySql);
+        stm.setString(1, query.get("thread").getAsString());
+        stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        ResultSet postsResultSet = stm.executeQuery();
 
-        return threadArray;
+        while ( postsResultSet.next() ){
+            detalisPostQuery.addProperty("post", postsResultSet.getString("p.id"));
+            postArray.add(postDetails(detalisPostQuery));
+        }
+        postsResultSet.close();
+        stm.close();
+
+        return postArray;
     }
 
     public String clear() throws SQLException {
