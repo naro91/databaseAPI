@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by narek on 01.11.14.
+ * Created by Abovyan Narek on 01.11.14.
  */
 public class TExecutor {
 

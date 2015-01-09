@@ -3,7 +3,7 @@ package database;
 import java.sql.*;
 
 /**
- * Created by narek on 03.11.14.
+ * Created by Abovyan Narek on 03.11.14.
  */
 public class SimpleExecutor {
     public void execUpdate(Connection connection, String update) throws SQLException {

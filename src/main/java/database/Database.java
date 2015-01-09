@@ -9,11 +9,10 @@ import com.sun.rowset.CachedRowSetImpl;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+
 
 /**
- * Created by narek on 06.11.14.
+ * Created by Abovyan Narek on 06.11.14.
  */
 public class Database {
 
@@ -266,18 +265,21 @@ public class Database {
                             "`isEdited`, `isSpam`, `isDeleted`, `date`, `thread`, `message`, `user`, `forum` ) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS);
             stmPost.setString(1, safelyGetStringFromJson(postData, "parent"));
-            stmPost.setBoolean(2, Boolean.parseBoolean(postData.get("isApproved").toString()));
-            stmPost.setBoolean(3, Boolean.parseBoolean(postData.get("isHighlighted").toString()));
-            stmPost.setBoolean(4, Boolean.parseBoolean(postData.get("isEdited").toString()));
-            stmPost.setBoolean(5, Boolean.parseBoolean(postData.get("isSpam").toString()));
-            stmPost.setBoolean(6, Boolean.parseBoolean(postData.get("isDeleted").toString()));
+            stmPost.setBoolean(2, postData.get("isApproved").getAsBoolean());
+            stmPost.setBoolean(3, postData.get("isHighlighted").getAsBoolean());
+            stmPost.setBoolean(4, postData.get("isEdited").getAsBoolean());
+            stmPost.setBoolean(5, postData.get("isSpam").getAsBoolean());
+            stmPost.setBoolean(6, postData.get("isDeleted").getAsBoolean());
             stmPost.setString(7, postData.get("date").getAsString());
             stmPost.setString(8, postData.get("thread").getAsString());
             stmPost.setString(9, postData.get("message").getAsString());
             stmPost.setString(10, postData.get("user").getAsString());
             stmPost.setString(11, postData.get("forum").getAsString());
             idPost = exec.execUpdateAndReturnId(stmPost);
-        }else idPost = -1;
+        }else {
+            idPost = -1;
+            stmThread.close();
+        }
 
         return idPost;
     }
@@ -449,6 +451,7 @@ public class Database {
             id = exec.execUpdateAndReturnId(stm);
         }catch (MySQLIntegrityConstraintViolationException e) {
             id = -1;
+            stm.close();
         }
 
         return id;

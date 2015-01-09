@@ -5,9 +5,11 @@ import com.google.gson.JsonObject;
 
 
 /**
- * Created by narek on 06.11.14.
+ * Created by Abovyan Narek on 06.11.14.
  */
 public class JsonResponse {
+    // класс для формирования json ответа на основании возвращенной информации из Database
+
     public static String createResponse(Object responseFromDatabase) {
         JsonObject requestResult = new JsonObject();
         JsonObject data;
@@ -46,5 +48,6 @@ public class JsonResponse {
     private static void requestFailBuilder (JsonObject requestResult, int code, String response) {
         requestResult.addProperty("code", code);
         requestResult.addProperty("response", response);
+        System.out.println("Exception Json :  " + requestResult.toString());
     }
 }
