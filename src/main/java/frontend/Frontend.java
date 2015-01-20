@@ -42,20 +42,22 @@ public class Frontend extends HttpServlet {
 
         response.setContentType("text/html;charset=utf-8");
         json = getRequestParser(URLDecoder.decode(request.getQueryString(), "UTF-8")); // получение json из get запроса
-        if (json.get("code") == null) {
+        if (json.get("exception") == null) {
             try {
                 responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
+                if (responseResult == null) responseResult = "{code : 3, response : \"invalid query\"}";
             } catch (SQLException e) {
                 e.printStackTrace();
             }
             responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(responseResult); // отправка ответа
         } else {
+            json.remove("exception");
             responseSetstatus(json.toString(), response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(json.toString()); // отправка ответа
         }
         response.getOutputStream().flush();
-        System.out.println(responseResult);
+        //System.out.println(responseResult);
     }
 
     public void doPost(HttpServletRequest request,
@@ -63,20 +65,22 @@ public class Frontend extends HttpServlet {
 
         response.setContentType("text/html;charset=utf-8");
         json = requestGetJson(request);  // получение json из запроса
-        if (json.get("code") == null) {
+        if (json.get("exception") == null) {
             try {
                 responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
+                if (responseResult == null) responseResult = "{code : 3, response : \"invalid query\"}";
             } catch (SQLException e) {
                 System.out.println(e);
             }
             responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(responseResult); // отправка ответа
         } else {
+            json.remove("exception");
             responseSetstatus(json.toString(), response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(json.toString()); // отправка ответа
         }
         response.getOutputStream().flush();
-        System.out.println(responseResult);
+        //System.out.println(responseResult);
     }
 
 
@@ -85,7 +89,7 @@ public class Frontend extends HttpServlet {
             if (requestMass[3].equals("clear")) {
                 return general.clear();
             } else {
-                return "bad"/*clear()*/;
+                return "{code : 3, response : \"invalid query\"}";
             }
         } else {
             if (requestMass.length > 4) {
@@ -116,6 +120,7 @@ public class Frontend extends HttpServlet {
             jsonObject = gson.fromJson(json.toString(), JsonObject.class);
         } catch (JsonSyntaxException e) {
             jsonObject = new JsonObject();
+            jsonObject.addProperty("exception", "exception");
             jsonObject.addProperty("code", 2);
             jsonObject.addProperty("response", "invalid request");
         }
@@ -151,6 +156,7 @@ public class Frontend extends HttpServlet {
                 }
             }else {
                 jsonObject = new JsonObject();
+                jsonObject.addProperty("exception", "exception");
                 jsonObject.addProperty("code", 2);
                 jsonObject.addProperty("response", "invalid request");
                 return jsonObject;

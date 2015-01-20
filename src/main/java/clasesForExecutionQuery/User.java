@@ -22,9 +22,9 @@ public class User implements GeneralMethods{
     }
 
     private String create(JsonObject userData) {
-        int id ;
+        int id;
         try {
-            System.out.println("Это User  ");
+            //System.out.println("Это User  " + userData.toString());
             id = database.createUser(userData);
             if (id != -1) {
                 userData.addProperty("id", id);
@@ -38,37 +38,37 @@ public class User implements GeneralMethods{
     }
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println("Это User детали");
+        //System.out.println("Это User детали");
         return JsonResponse.createResponse(database.userDetails(query));
     }
 
     private String follow(JsonObject query) throws SQLException {
-        System.out.println("Это User Follow");
+        //System.out.println("Это User Follow");
         return JsonResponse.createResponse(database.userFollow(query));
     }
 
     private String listFollowers(JsonObject query) throws SQLException {
-        System.out.println("Это User ListFollowers" );
+        //System.out.println("Это User ListFollowers" );
         return JsonResponse.createResponse(database.userListFollowers(query));
     }
 
     private String listFollowing(JsonObject query) throws SQLException {
-        System.out.println("Это User ListFolloweing" );
+        //System.out.println("Это User ListFolloweing" );
         return JsonResponse.createResponse(database.userListFollowing(query));
     }
 
     private String listPosts(JsonObject query) throws SQLException {
-        System.out.println("Это User ListPost" );
+        //System.out.println("Это User ListPost" );
         return JsonResponse.createResponse(database.userListPosts(query));
     }
 
     private String unfollow(JsonObject query) throws SQLException {
-        System.out.println("Это User unfollow");
+        //System.out.println("Это User unfollow");
         return JsonResponse.createResponse(database.userUnfollow(query));
     }
 
     private String updateProfile(JsonObject query) throws SQLException {
-        System.out.println("Это update user");
+        //System.out.println("Это update user");
         return JsonResponse.createResponse(database.userUpdate(query));
     }
 

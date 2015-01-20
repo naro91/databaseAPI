@@ -25,7 +25,7 @@ public class Forum implements GeneralMethods {
 
     private String create(JsonObject forumData) {
         try {
-            System.out.println("Это форум  ");
+            //System.out.println("Это форум  ");
             int id = database.createForum(forumData);
             forumData.addProperty("id", id);
             return JsonResponse.createResponse(forumData);
@@ -38,22 +38,22 @@ public class Forum implements GeneralMethods {
     }
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println("Это детали форум  " + query);
+        //System.out.println("Это детали форум  " + query);
         return JsonResponse.createResponse(database.forumDetails(query));
     }
 
     private String listPosts(JsonObject query) throws SQLException {
-        System.out.println("Это Forum ListPost  " + query);
+        //System.out.println("Это Forum ListPost  " + query);
         return JsonResponse.createResponse(database.forumListPost(query));
     }
 
     private String listThreads(JsonObject query) throws SQLException {
-        System.out.println("Это Forum ListThread  " + query);
+        //System.out.println("Это Forum ListThread  " + query);
         return JsonResponse.createResponse(database.forumListThread(query));
     }
 
     private String listUsers(JsonObject query) throws SQLException {
-        System.out.println("Это Forum listUser");
+        //System.out.println("Это Forum listUser");
         //System.out.println("Это запрос   " + query.toString());
         return JsonResponse.createResponse(database.forumListUsers(query));
     }

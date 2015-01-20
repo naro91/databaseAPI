@@ -23,8 +23,8 @@ public class Post implements GeneralMethods{
 
     private String create(JsonObject postData) {
         try {
-            System.out.println("Это Post create");
-            System.out.println(postData);
+           // System.out.println("Это Post create");
+            //System.out.println(postData);
             int id = database.createPost(postData);
             if (id != -1) {
                 postData.addProperty("id", id);
@@ -40,28 +40,28 @@ public class Post implements GeneralMethods{
     }
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println("Это Post details");
-        System.out.println(query);
+        //System.out.println("Это Post details");
+        //System.out.println(query);
         return JsonResponse.createResponse(database.postDetails(query));
     }
 
     private String list(JsonObject query) throws SQLException {
-        System.out.println("Это Post List");
+        //System.out.println("Это Post List");
         return JsonResponse.createResponse(database.postList(query));
     }
 
     private String remove(JsonObject query) throws SQLException {
-        System.out.println("Это Post remove");
+        //System.out.println("Это Post remove");
         return JsonResponse.createResponse(database.postRemove(query));
     }
 
     private String restore(JsonObject query) throws SQLException {
-        System.out.println("Это Post restore");
+        //System.out.println("Это Post restore");
         return JsonResponse.createResponse(database.postRestore(query));
     }
 
     private String update(JsonObject query) throws SQLException {
-        System.out.println("Это Post update");
+        //System.out.println("Это Post update");
         return JsonResponse.createResponse(database.postUpdate(query));
     }
 

@@ -167,7 +167,7 @@ public class Database {
             stm.close();
         }
 
-        System.out.println(responseJson);
+        //System.out.println(responseJson);
         return responseJson;
     }
 
@@ -185,7 +185,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("forum").getAsString());
         stm.setInt(2, query.get("since_id") != null ? query.get("since_id").getAsInt() : 0);
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet usersResultSet = stm.executeQuery();
 
         while ( usersResultSet.next() ){
@@ -210,7 +210,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("forum").getAsString());
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet postsResultSet = stm.executeQuery();
 
         while ( postsResultSet.next() ){
@@ -236,7 +236,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("forum").getAsString());
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet threadResultSet = stm.executeQuery();
 
         while ( threadResultSet.next() ){
@@ -421,7 +421,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, isForum ? query.get("forum").getAsString() : query.get("thread").getAsString());
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet postsResultSet = stm.executeQuery();
 
         while ( postsResultSet.next() ){
@@ -442,11 +442,11 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement("INSERT INTO User (`isAnonymous`, `username`, `about`," +
                 "`name`, `email`) VALUES (?, ?, ?, ?, ?)",
                 Statement.RETURN_GENERATED_KEYS);
-        stm.setBoolean(1, Boolean.parseBoolean(userData.get("isAnonymous").getAsString()));
+        stm.setBoolean(1,userData.get("isAnonymous").getAsBoolean());
         stm.setString(2, safelyGetStringFromJson(userData, "username") );
         stm.setString(3, safelyGetStringFromJson(userData, "about") );
         stm.setString(4, safelyGetStringFromJson(userData, "name") );
-        stm.setString(5, userData.get("email").getAsString());
+        stm.setString(5, safelyGetStringFromJson(userData, "email") ); //userData.get("email").getAsString());
         try {
             id = exec.execUpdateAndReturnId(stm);
         }catch (MySQLIntegrityConstraintViolationException e) {
@@ -573,7 +573,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("user").getAsString());
         stm.setInt(2, query.get("since_id") != null ? query.get("since_id").getAsInt() : 0);
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet usersResultSet = stm.executeQuery();
 
         while ( usersResultSet.next() ){
@@ -600,7 +600,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("user").getAsString());
         stm.setInt(2, query.get("since_id") != null ? query.get("since_id").getAsInt() : 0);
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet usersResultSet = stm.executeQuery();
 
         while ( usersResultSet.next() ){
@@ -625,7 +625,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("user").getAsString());
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet postsResultSet = stm.executeQuery();
 
         while ( postsResultSet.next() ){
@@ -852,7 +852,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, isForum ? query.get("forum").getAsString() : query.get("user").getAsString());
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet threadResultSet = stm.executeQuery();
 
         while ( threadResultSet.next() ){
@@ -878,7 +878,7 @@ public class Database {
         PreparedStatement stm = connection.prepareStatement(querySql);
         stm.setString(1, query.get("thread").getAsString());
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
-        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 1000000);
+        stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet postsResultSet = stm.executeQuery();
 
         while ( postsResultSet.next() ){
@@ -908,12 +908,22 @@ public class Database {
         return response.toString();
     }
 
+    // вспомогательные функции
+
     public String safelyGetStringFromJson(JsonObject json, String name) {
         if (json.get(name) != null) {
             if (json.get(name).toString().equals("null")) {
                 return null;
             } else return json.get(name).getAsString();
         } else return null;
+    }
+
+    public JsonArray userDetailsFromResultSet (ResultSet usersResultSet) throws SQLException {
+        while ( usersResultSet.next() ){
+
+        }
+
+        return new JsonArray();
     }
 
 }
