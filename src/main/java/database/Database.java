@@ -172,10 +172,10 @@ public class Database {
     }
 
     public JsonArray forumListUsers(JsonObject query) throws SQLException {
-        String querySqlmass[] = { "SELECT p.user FROM Post p LEFT JOIN User u ON p.user = u.email WHERE p.forum = ? " +
-        "AND u.id >= ? GROUP BY u.id ORDER BY u.name DESC LIMIT ?",
-                "SELECT p.user FROM Post p LEFT JOIN User u ON p.user = u.email WHERE p.forum = ? " +
-        "AND u.id >= ? GROUP BY u.id ORDER BY u.name ASC LIMIT ?"};
+        String querySqlmass[] = { "SELECT u.about, u.email, u.id, u.isAnonymous, u.name, u.username FROM User u WHERE u.email in (SELECT DISTINCT user FROM Post p WHERE p.forum = ?) " +
+        "AND u.id >= ? ORDER BY u.name DESC LIMIT ?",
+                "SELECT u.about, u.email, u.id, u.isAnonymous, u.name, u.username FROM User u WHERE u.email in (SELECT DISTINCT user FROM Post p WHERE p.forum = ?) " +
+        "AND u.id >= ? ORDER BY u.name ASC LIMIT ?"};
         String querySql;
         JsonObject detalisUserQuery = new JsonObject();
         JsonArray usersArray = new JsonArray();
@@ -188,10 +188,11 @@ public class Database {
         stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet usersResultSet = stm.executeQuery();
 
-        while ( usersResultSet.next() ){
-            detalisUserQuery.addProperty("user", usersResultSet.getString("p.user"));
+        /*while ( usersResultSet.next() ){
+            detalisUserQuery.addProperty("user", usersResultSet.getString("u.email"));
             usersArray.add(userDetails(detalisUserQuery));
-        }
+        }*/
+        usersArray = userDetailsFromResultSet(usersResultSet);
         usersResultSet.close();
         stm.close();
 
@@ -919,11 +920,66 @@ public class Database {
     }
 
     public JsonArray userDetailsFromResultSet (ResultSet usersResultSet) throws SQLException {
-        while ( usersResultSet.next() ){
+        PreparedStatement stm;
+        ResultSet resultSet;
+        CachedRowSetImpl followers = new CachedRowSetImpl();
+        CachedRowSetImpl following = new CachedRowSetImpl();
+        CachedRowSetImpl subscriptions = new CachedRowSetImpl();
+        ArrayList<String> temp = new ArrayList<String>();
+        JsonArray jsonArrayResponse = new JsonArray();
 
+        while ( usersResultSet.next() ){
+            JsonObject jUser = new JsonObject();
+            stm = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
+            stm.setString(1, usersResultSet.getString("u.email"));
+            resultSet = stm.executeQuery();
+            followers.populate(resultSet);
+            resultSet.close();
+            stm.close();
+
+            while (followers.next()) {
+                temp.add(followers.getString("followers"));
+            }
+            jUser.addProperty("about", usersResultSet.getString("u.about"));
+            jUser.addProperty("email", usersResultSet.getString("u.email"));
+            jUser.add("followers", gson.toJsonTree(temp));
+            followers.close();
+
+            stm = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
+            stm.setString(1, usersResultSet.getString("u.email"));
+            resultSet = stm.executeQuery();
+            following.populate(resultSet);
+            resultSet.close();
+            stm.close();
+            temp.clear();
+
+            while (following.next()) {
+                temp.add(following.getString("user"));
+            }
+            jUser.add("following", gson.toJsonTree(temp));
+            jUser.addProperty("id", usersResultSet.getLong("u.id"));
+            jUser.addProperty("isAnonymous", usersResultSet.getBoolean("u.isAnonymous"));
+            jUser.addProperty("name", usersResultSet.getString("u.name"));
+            following.close();
+
+            stm = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
+            stm.setString(1, usersResultSet.getString("u.email"));
+            resultSet = stm.executeQuery();
+            subscriptions.populate(resultSet);
+            resultSet.close();
+            stm.close();
+            ArrayList<Integer> temp2 = new ArrayList<Integer>();
+
+            while (subscriptions.next()) {
+                temp2.add(subscriptions.getInt("thread_id"));
+            }
+            jUser.add("subscriptions", gson.toJsonTree(temp2));
+            subscriptions.close();
+            jUser.addProperty("username", usersResultSet.getString("u.username"));
+            jsonArrayResponse.add(jUser);
         }
 
-        return new JsonArray();
+        return jsonArrayResponse;
     }
 
 }
