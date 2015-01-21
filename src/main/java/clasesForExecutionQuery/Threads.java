@@ -32,63 +32,121 @@ public class Threads implements GeneralMethods{
             e.printStackTrace();
             threadData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(threadData);
+        } catch (NullPointerException e) {
+            threadData.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(threadData);
         }
     }
 
     private String close(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Close");
-        return JsonResponse.createResponse(database.threadClose(query));
+        try {
+            return JsonResponse.createResponse(database.threadClose(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
 
     private String details(JsonObject query) throws SQLException {
         //System.out.println("Это Thread details");
-        return JsonResponse.createResponse( database.threadDetails(query) );
+        try {
+            return JsonResponse.createResponse(database.threadDetails(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String list(JsonObject query) throws SQLException {
         //System.out.println("Это Thread List");
-        return JsonResponse.createResponse(database.threadList(query));
+        try {
+            return JsonResponse.createResponse(database.threadList(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listPosts(JsonObject query) throws SQLException {
         //System.out.println("Это Thread List");
-        return JsonResponse.createResponse(database.threadListPosts(query));
+        try {
+            return JsonResponse.createResponse(database.threadListPosts(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String open(JsonObject query) throws SQLException {
         //System.out.println("Это Thread open");
-        return JsonResponse.createResponse(database.threadOpen(query));
+        try {
+            return JsonResponse.createResponse(database.threadOpen(query));
+        } catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String remove(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Remove");
-        return JsonResponse.createResponse(database.threadRemove(query));
+        try {
+            return JsonResponse.createResponse(database.threadRemove(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String restore(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Restore");
-        return JsonResponse.createResponse(database.threadRestore(query));
+        try {
+            return JsonResponse.createResponse(database.threadRestore(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String subscribe(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Subscribe");
-        return JsonResponse.createResponse(database.threadSubscribe(query));
+        try {
+            return JsonResponse.createResponse(database.threadSubscribe(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String unsubscribe(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Unsubscribe");
-        return JsonResponse.createResponse(database.threadUnsubscribe(query));
+        try {
+            return JsonResponse.createResponse(database.threadUnsubscribe(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String update(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Update");
-        return JsonResponse.createResponse(database.threadUpdate(query));
+        try {
+            return JsonResponse.createResponse(database.threadUpdate(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String vote(JsonObject query) throws SQLException {
         //System.out.println("Это Thread Vote");
-        return JsonResponse.createResponse(database.threadVote(query));
+        try {
+            return JsonResponse.createResponse(database.threadVote(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     @Override

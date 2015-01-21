@@ -42,31 +42,61 @@ public class Post implements GeneralMethods{
     private String details(JsonObject query) throws SQLException {
         //System.out.println("Это Post details");
         //System.out.println(query);
-        return JsonResponse.createResponse(database.postDetails(query));
+        try {
+            return JsonResponse.createResponse(database.postDetails(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String list(JsonObject query) throws SQLException {
         //System.out.println("Это Post List");
-        return JsonResponse.createResponse(database.postList(query));
+        try {
+            return JsonResponse.createResponse(database.postList(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String remove(JsonObject query) throws SQLException {
         //System.out.println("Это Post remove");
-        return JsonResponse.createResponse(database.postRemove(query));
+        try {
+            return JsonResponse.createResponse(database.postRemove(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String restore(JsonObject query) throws SQLException {
         //System.out.println("Это Post restore");
-        return JsonResponse.createResponse(database.postRestore(query));
+        try {
+            return JsonResponse.createResponse(database.postRestore(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String update(JsonObject query) throws SQLException {
         //System.out.println("Это Post update");
-        return JsonResponse.createResponse(database.postUpdate(query));
+        try {
+            return JsonResponse.createResponse(database.postUpdate(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String vote(JsonObject query) throws SQLException {
-        return JsonResponse.createResponse( database.postVote(query) );
+        try {
+            return JsonResponse.createResponse(database.postVote(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     @Override

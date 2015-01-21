@@ -153,7 +153,7 @@ public class Database {
             }
 
         } else {
-            short_name = query.get("forum").getAsString();
+            short_name = safelyGetStringFromJson(query, "forum"); //query.get("forum").getAsString();
             PreparedStatement stm = connection.prepareStatement("SELECT * FROM Forum WHERE short_name=?");
             stm.setObject(1,short_name);
             ResultSet resultSet = stm.executeQuery();
@@ -209,7 +209,7 @@ public class Database {
             querySql = query.get("order").getAsString().equals("asc") ? querySqlmass[1] : querySqlmass[0];
         } else  querySql = querySqlmass[0];
         PreparedStatement stm = connection.prepareStatement(querySql);
-        stm.setString(1, query.get("forum").getAsString());
+        stm.setString(1, safelyGetStringFromJson(query, "forum"));
         stm.setString(2, query.get("since") != null ? query.get("since").getAsString() : "1970-01-01 00:00:00");
         stm.setInt(3, query.get("limit") != null ? query.get("limit").getAsInt() : 10);
         ResultSet postsResultSet = stm.executeQuery();

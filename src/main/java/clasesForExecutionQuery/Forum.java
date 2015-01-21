@@ -39,23 +39,43 @@ public class Forum implements GeneralMethods {
 
     private String details(JsonObject query) throws SQLException {
         //System.out.println("Это детали форум  " + query);
-        return JsonResponse.createResponse(database.forumDetails(query));
+        try {
+            return JsonResponse.createResponse(database.forumDetails(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listPosts(JsonObject query) throws SQLException {
         //System.out.println("Это Forum ListPost  " + query);
-        return JsonResponse.createResponse(database.forumListPost(query));
+        try {
+            return JsonResponse.createResponse(database.forumListPost(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listThreads(JsonObject query) throws SQLException {
         //System.out.println("Это Forum ListThread  " + query);
-        return JsonResponse.createResponse(database.forumListThread(query));
+        try {
+            return JsonResponse.createResponse(database.forumListThread(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listUsers(JsonObject query) throws SQLException {
         //System.out.println("Это Forum listUser");
         //System.out.println("Это запрос   " + query.toString());
-        return JsonResponse.createResponse(database.forumListUsers(query));
+        try {
+            return JsonResponse.createResponse(database.forumListUsers(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
 

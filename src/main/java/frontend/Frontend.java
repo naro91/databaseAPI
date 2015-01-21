@@ -48,6 +48,7 @@ public class Frontend extends HttpServlet {
                 if (responseResult == null) responseResult = "{code : 3, response : \"invalid query\"}";
             } catch (SQLException e) {
                 e.printStackTrace();
+                //responseResult = "{code : 4, response : \"An unknown error\"}";
             }
             responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(responseResult); // отправка ответа
@@ -71,6 +72,7 @@ public class Frontend extends HttpServlet {
                 if (responseResult == null) responseResult = "{code : 3, response : \"invalid query\"}";
             } catch (SQLException e) {
                 System.out.println(e);
+                //responseResult = "{code : 4, response : \"An unknown error\"}";
             }
             responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(responseResult); // отправка ответа

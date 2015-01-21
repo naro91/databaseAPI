@@ -34,42 +34,80 @@ public class User implements GeneralMethods{
             e.printStackTrace();
             userData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(userData);
+        }catch (NullPointerException e) {
+            userData.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(userData);
         }
     }
 
     private String details(JsonObject query) throws SQLException {
         //System.out.println("Это User детали");
-        return JsonResponse.createResponse(database.userDetails(query));
+        try {
+            return JsonResponse.createResponse(database.userDetails(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String follow(JsonObject query) throws SQLException {
         //System.out.println("Это User Follow");
-        return JsonResponse.createResponse(database.userFollow(query));
+        try {
+            return JsonResponse.createResponse(database.userFollow(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listFollowers(JsonObject query) throws SQLException {
         //System.out.println("Это User ListFollowers" );
-        return JsonResponse.createResponse(database.userListFollowers(query));
+        try {
+            return JsonResponse.createResponse(database.userListFollowers(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listFollowing(JsonObject query) throws SQLException {
         //System.out.println("Это User ListFolloweing" );
-        return JsonResponse.createResponse(database.userListFollowing(query));
+        try {
+            return JsonResponse.createResponse(database.userListFollowing(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String listPosts(JsonObject query) throws SQLException {
         //System.out.println("Это User ListPost" );
-        return JsonResponse.createResponse(database.userListPosts(query));
+        try {
+            return JsonResponse.createResponse(database.userListPosts(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String unfollow(JsonObject query) throws SQLException {
         //System.out.println("Это User unfollow");
-        return JsonResponse.createResponse(database.userUnfollow(query));
+        try {
+            return JsonResponse.createResponse(database.userUnfollow(query));
+        } catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     private String updateProfile(JsonObject query) throws SQLException {
         //System.out.println("Это update user");
-        return JsonResponse.createResponse(database.userUpdate(query));
+        try {
+            return JsonResponse.createResponse(database.userUpdate(query));
+        }catch (NullPointerException e) {
+            query.addProperty("exception", "invalid query");
+            return JsonResponse.createResponse(query);
+        }
     }
 
     @Override
