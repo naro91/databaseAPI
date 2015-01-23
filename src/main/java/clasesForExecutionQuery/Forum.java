@@ -35,8 +35,6 @@ public class Forum implements GeneralMethods {
             //e.printStackTrace();
             forumData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(forumData);
-        }catch (NullPointerException e) {
-            return JsonResponse.createResponse(new JsonObject());
         }
     }
 

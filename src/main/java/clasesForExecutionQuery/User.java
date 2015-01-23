@@ -34,9 +34,6 @@ public class User implements GeneralMethods{
             e.printStackTrace();
             userData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(userData);
-        }catch (NullPointerException e) {
-            userData.addProperty("exception", "invalid query");
-            return JsonResponse.createResponse(userData);
         }
     }
 

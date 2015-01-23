@@ -32,9 +32,6 @@ public class Threads implements GeneralMethods{
             e.printStackTrace();
             threadData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(threadData);
-        } catch (NullPointerException e) {
-            threadData.addProperty("exception", "invalid query");
-            return JsonResponse.createResponse(threadData);
         }
     }
 
