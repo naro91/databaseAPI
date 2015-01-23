@@ -23,7 +23,7 @@ public class Post implements GeneralMethods{
 
     private String create(JsonObject postData) {
         try {
-           // System.out.println("Это Post create");
+            System.out.println("Это Post create   " + postData.toString());
             //System.out.println(postData);
             int id = database.createPost(postData);
             if (id != -1) {
@@ -40,8 +40,8 @@ public class Post implements GeneralMethods{
     }
 
     private String details(JsonObject query) throws SQLException {
-        //System.out.println("Это Post details");
-        //System.out.println(query);
+        System.out.println("Это Post details   " + query.toString());
+        System.out.println(query);
         try {
             return JsonResponse.createResponse(database.postDetails(query));
         }catch (NullPointerException e) {
@@ -51,7 +51,7 @@ public class Post implements GeneralMethods{
     }
 
     private String list(JsonObject query) throws SQLException {
-        //System.out.println("Это Post List");
+        System.out.println("Это Post List   " + query.toString());
         try {
             return JsonResponse.createResponse(database.postList(query));
         }catch (NullPointerException e) {
@@ -61,7 +61,7 @@ public class Post implements GeneralMethods{
     }
 
     private String remove(JsonObject query) throws SQLException {
-        //System.out.println("Это Post remove");
+        System.out.println("Это Post remove   " + query.toString());
         try {
             return JsonResponse.createResponse(database.postRemove(query));
         }catch (NullPointerException e) {
@@ -71,7 +71,7 @@ public class Post implements GeneralMethods{
     }
 
     private String restore(JsonObject query) throws SQLException {
-        //System.out.println("Это Post restore");
+        System.out.println("Это Post restore    " + query.toString());
         try {
             return JsonResponse.createResponse(database.postRestore(query));
         }catch (NullPointerException e) {
@@ -81,7 +81,7 @@ public class Post implements GeneralMethods{
     }
 
     private String update(JsonObject query) throws SQLException {
-        //System.out.println("Это Post update");
+        System.out.println("Это Post update    " + query.toString());
         try {
             return JsonResponse.createResponse(database.postUpdate(query));
         }catch (NullPointerException e) {
@@ -91,6 +91,7 @@ public class Post implements GeneralMethods{
     }
 
     private String vote(JsonObject query) throws SQLException {
+        System.out.println("Это Post vote  " + query.toString());
         try {
             return JsonResponse.createResponse(database.postVote(query));
         }catch (NullPointerException e) {

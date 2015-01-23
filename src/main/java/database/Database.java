@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import com.sun.rowset.CachedRowSetImpl;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -77,10 +76,6 @@ public class Database {
     }
 
     public JsonObject forumDetails (JsonObject query) throws SQLException {
-        CachedRowSetImpl forumJoinUser = new CachedRowSetImpl();
-        CachedRowSetImpl followers = new CachedRowSetImpl();
-        CachedRowSetImpl following = new CachedRowSetImpl();
-        CachedRowSetImpl subscriptions = new CachedRowSetImpl();
         JsonObject responseJson = new JsonObject();
         String short_name;
 
@@ -88,14 +83,12 @@ public class Database {
             ArrayList<String> temp = new ArrayList<String>();
             short_name = query.get("forum").getAsString();
 
-            PreparedStatement stm = connection.prepareStatement("SELECT Forum.id,Forum.name,Forum.short_name," +
+            PreparedStatement stmForumJoinUser = connection.prepareStatement("SELECT Forum.id,Forum.name,Forum.short_name," +
                     "User.id,User.username,User.email,User.about,User.isAnonymous, " +
                     "User.name FROM Forum JOIN User ON Forum.user = User.email WHERE short_name = ? ");
-            stm.setString(1, short_name);
-            ResultSet resultSet = stm.executeQuery();
-            forumJoinUser.populate(resultSet);
-            resultSet.close();
-            stm.close();
+            stmForumJoinUser.setString(1, short_name);
+            ResultSet forumJoinUser = stmForumJoinUser.executeQuery();
+
 
             if(forumJoinUser.next()){
 
@@ -103,28 +96,23 @@ public class Database {
                 responseJson.addProperty("name", forumJoinUser.getString(2));
                 responseJson.addProperty("short_name", short_name);
 
-                stm = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
-                stm.setString(1, short_name);
-                resultSet = stm.executeQuery();
-                followers.populate(resultSet);
-                resultSet.close();
-                stm.close();
+                PreparedStatement stmFollowers = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
+                stmFollowers.setString(1, short_name);
+                ResultSet followers = stmFollowers.executeQuery();
+
 
                 while (followers.next()) {
                     temp.add(followers.getString(2));
                 }
 
-                stm = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
+                PreparedStatement stmFollowing = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
                 JsonObject jUser = new JsonObject();
                 jUser.addProperty("about", forumJoinUser.getString(7));
                 jUser.addProperty("email", forumJoinUser.getString(6));
                 jUser.add("followers", gson.toJsonTree(temp));
 
-                stm.setString(1, short_name);
-                resultSet = stm.executeQuery();
-                following.populate(resultSet);
-                resultSet.close();
-                stm.close();
+                stmFollowing.setString(1, short_name);
+                ResultSet following = stmFollowing.executeQuery();
                 temp.clear();
 
                 while (following.next()) {
@@ -135,12 +123,9 @@ public class Database {
                 jUser.addProperty("isAnonymous", forumJoinUser.getBoolean(8));
                 jUser.addProperty("name", forumJoinUser.getString(9));
 
-                stm = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
-                stm.setString(1, short_name);
-                resultSet = stm.executeQuery();
-                subscriptions.populate(resultSet);
-                resultSet.close();
-                stm.close();
+                PreparedStatement stmSubscriptions = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
+                stmSubscriptions.setString(1, short_name);
+                ResultSet subscriptions = stmSubscriptions.executeQuery();
                 ArrayList<Integer> temp2 = new ArrayList<Integer>();
 
                 while (subscriptions.next()) {
@@ -150,8 +135,16 @@ public class Database {
                 jUser.addProperty("username", forumJoinUser.getString(5));
 
                 responseJson.add("user", jUser);
-            }
 
+                followers.close();
+                following.close();
+                subscriptions.close();
+                stmFollowers.close();
+                stmFollowing.close();
+                stmSubscriptions.close();
+            }
+            forumJoinUser.close();
+            stmForumJoinUser.close();
         } else {
             short_name = safelyGetStringFromJson(query, "forum"); //query.get("forum").getAsString();
             PreparedStatement stm = connection.prepareStatement("SELECT * FROM Forum WHERE short_name=?");
@@ -459,29 +452,19 @@ public class Database {
     }
 
     public JsonObject userDetails(JsonObject query) throws SQLException {
-        CachedRowSetImpl User = new CachedRowSetImpl();
-        CachedRowSetImpl followers = new CachedRowSetImpl();
-        CachedRowSetImpl following = new CachedRowSetImpl();
-        CachedRowSetImpl subscriptions = new CachedRowSetImpl();
         JsonObject jUser = new JsonObject();
         ArrayList<String> temp = new ArrayList<String>();
         String userEmail = query.get("user").getAsString();
         //System.out.println(userEmail);
 
-        PreparedStatement stm = connection.prepareStatement("SELECT * FROM User WHERE email = ? ");
-        stm.setString(1, userEmail);
-        ResultSet resultSet = stm.executeQuery();
-        User.populate(resultSet);
-        resultSet.close();
-        stm.close();
+        PreparedStatement stmUser = connection.prepareStatement("SELECT * FROM User WHERE email = ? ");
+        stmUser.setString(1, userEmail);
+        ResultSet User = stmUser.executeQuery();
 
         if(User.next()) {
-            stm = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
-            stm.setString(1, userEmail);
-            resultSet = stm.executeQuery();
-            followers.populate(resultSet);
-            resultSet.close();
-            stm.close();
+            PreparedStatement stmFollowers = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
+            stmFollowers.setString(1, userEmail);
+            ResultSet followers = stmFollowers.executeQuery();
 
             while (followers.next()) {
                 temp.add(followers.getString("followers"));
@@ -490,12 +473,9 @@ public class Database {
             jUser.addProperty("email", User.getString("email"));
             jUser.add("followers", gson.toJsonTree(temp));
 
-            stm = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
-            stm.setString(1, userEmail);
-            resultSet = stm.executeQuery();
-            following.populate(resultSet);
-            resultSet.close();
-            stm.close();
+            PreparedStatement stmFollowing = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
+            stmFollowing.setString(1, userEmail);
+            ResultSet following = stmFollowing.executeQuery();
             temp.clear();
 
             while (following.next()) {
@@ -506,12 +486,9 @@ public class Database {
             jUser.addProperty("isAnonymous", User.getBoolean("isAnonymous"));
             jUser.addProperty("name", User.getString("name"));
 
-            stm = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
-            stm.setString(1, userEmail);
-            resultSet = stm.executeQuery();
-            subscriptions.populate(resultSet);
-            resultSet.close();
-            stm.close();
+            PreparedStatement stmSubscriptions = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
+            stmSubscriptions.setString(1, userEmail);
+            ResultSet subscriptions = stmSubscriptions.executeQuery();
             ArrayList<Integer> temp2 = new ArrayList<Integer>();
 
             while (subscriptions.next()) {
@@ -520,8 +497,15 @@ public class Database {
             jUser.add("subscriptions", gson.toJsonTree(temp2));
             jUser.addProperty("username", User.getString("username"));
 
+            followers.close();
+            stmFollowers.close();
+            following.close();
+            stmFollowing.close();
+            subscriptions.close();
+            stmSubscriptions.close();
         }
-    
+        User.close();
+        stmUser.close();
         return jUser;
     }
 
@@ -738,7 +722,7 @@ public class Database {
 
     public JsonObject threadOpen(JsonObject query) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("UPDATE Thread SET isClosed = false WHERE id = ?");
-        int id = Integer.valueOf( query.get("thread").getAsString() );
+        int id = query.get("thread").getAsInt();
         if (id >= 0) {
             stm.setInt(1, id);
             stm.executeUpdate();
@@ -920,65 +904,67 @@ public class Database {
     }
 
     public JsonArray userDetailsFromResultSet (ResultSet usersResultSet) throws SQLException {
-        PreparedStatement stm;
-        ResultSet resultSet;
-        CachedRowSetImpl followers = new CachedRowSetImpl();
-        CachedRowSetImpl following = new CachedRowSetImpl();
-        CachedRowSetImpl subscriptions = new CachedRowSetImpl();
+        long time = System.currentTimeMillis();
+        PreparedStatement stmFollowers, stmFollowing, stmSubscription;
+        stmFollowers = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
+        stmFollowing = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
+        stmSubscription = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
+        ResultSet resultSetFollowers, resultSetFollowing, resultSetSubscription;
         ArrayList<String> temp = new ArrayList<String>();
+        ArrayList<Integer> temp2 = new ArrayList<Integer>();
         JsonArray jsonArrayResponse = new JsonArray();
 
         while ( usersResultSet.next() ){
             JsonObject jUser = new JsonObject();
-            stm = connection.prepareStatement("SELECT * From User_followers WHERE user = ?");
-            stm.setString(1, usersResultSet.getString("u.email"));
-            resultSet = stm.executeQuery();
-            followers.populate(resultSet);
-            resultSet.close();
-            stm.close();
 
-            while (followers.next()) {
-                temp.add(followers.getString("followers"));
+            stmFollowers.setString(1, usersResultSet.getString("u.email"));
+            resultSetFollowers = stmFollowers.executeQuery();
+            while (resultSetFollowers.next()) {
+                temp.add(resultSetFollowers.getString("followers"));
             }
+            resultSetFollowers.close();
+            stmFollowers.clearParameters();
+
             jUser.addProperty("about", usersResultSet.getString("u.about"));
             jUser.addProperty("email", usersResultSet.getString("u.email"));
             jUser.add("followers", gson.toJsonTree(temp));
-            followers.close();
 
-            stm = connection.prepareStatement("SELECT * From User_followers WHERE followers = ?");
-            stm.setString(1, usersResultSet.getString("u.email"));
-            resultSet = stm.executeQuery();
-            following.populate(resultSet);
-            resultSet.close();
-            stm.close();
+
+            stmFollowing.setString(1, usersResultSet.getString("u.email"));
+            resultSetFollowing = stmFollowing.executeQuery();
             temp.clear();
-
-            while (following.next()) {
-                temp.add(following.getString("user"));
+            while (resultSetFollowing.next()) {
+                temp.add(resultSetFollowing.getString("user"));
             }
+            resultSetFollowing.close();
+            stmFollowing.clearParameters();
+
+
             jUser.add("following", gson.toJsonTree(temp));
             jUser.addProperty("id", usersResultSet.getLong("u.id"));
             jUser.addProperty("isAnonymous", usersResultSet.getBoolean("u.isAnonymous"));
             jUser.addProperty("name", usersResultSet.getString("u.name"));
-            following.close();
 
-            stm = connection.prepareStatement("SELECT * From Thread_followers WHERE follower_email = ?");
-            stm.setString(1, usersResultSet.getString("u.email"));
-            resultSet = stm.executeQuery();
-            subscriptions.populate(resultSet);
-            resultSet.close();
-            stm.close();
-            ArrayList<Integer> temp2 = new ArrayList<Integer>();
 
-            while (subscriptions.next()) {
-                temp2.add(subscriptions.getInt("thread_id"));
+            stmSubscription.setString(1, usersResultSet.getString("u.email"));
+            resultSetSubscription = stmSubscription.executeQuery();
+            temp2.clear();
+            while (resultSetSubscription.next()) {
+                temp2.add(resultSetSubscription.getInt("thread_id"));
             }
+            resultSetSubscription.close();
+            stmSubscription.clearParameters();
+
+
             jUser.add("subscriptions", gson.toJsonTree(temp2));
-            subscriptions.close();
             jUser.addProperty("username", usersResultSet.getString("u.username"));
             jsonArrayResponse.add(jUser);
         }
 
+        stmFollowers.close();
+        stmFollowing.close();
+        stmSubscription.close();
+        System.out.println("Время сборки listUser  " + (System.currentTimeMillis() - time) );
         return jsonArrayResponse;
     }
 

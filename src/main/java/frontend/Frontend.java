@@ -36,12 +36,23 @@ public class Frontend extends HttpServlet {
     private User user = new User(database, gson);
     private Threads thread = new Threads(database, gson);
     private General general = new General(database, gson);
+    volatile private long timeG;
+    volatile private long timeP;
+    private  int i = 0;
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
         response.setContentType("text/html;charset=utf-8");
-        json = getRequestParser(URLDecoder.decode(request.getQueryString(), "UTF-8")); // получение json из get запроса
+        timeG = System.currentTimeMillis();
+        try {
+            json = getRequestParser(URLDecoder.decode(request.getQueryString(), "UTF-8")); // получение json из get запроса
+        }catch (NullPointerException e) {
+            json = new JsonObject();
+            json.addProperty("exception", "exception");
+            json.addProperty("code", 2);
+            json.addProperty("response", "invalid request");
+        }
         if (json.get("exception") == null) {
             try {
                 responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
@@ -58,15 +69,21 @@ public class Frontend extends HttpServlet {
             response.getOutputStream().print(json.toString()); // отправка ответа
         }
         response.getOutputStream().flush();
-        //System.out.println(responseResult);
+        timeG = System.currentTimeMillis() - timeG;
+        if (timeG > 300) {
+            i++;
+            System.out.println("      TIME      " + timeG);
+            System.out.println(responseResult);
+        }
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
 
         response.setContentType("text/html;charset=utf-8");
+        timeP = System.currentTimeMillis();
         json = requestGetJson(request);  // получение json из запроса
-        if (json.get("exception") == null) {
+        if (json != null && json.get("exception") == null) {
             try {
                 responseResult = delegationCall(request.getRequestURI().split("/"), json);  // делегирование запроса соответствующему классу и методу
                 if (responseResult == null) responseResult = "{code : 3, response : \"invalid query\"}";
@@ -77,12 +94,19 @@ public class Frontend extends HttpServlet {
             responseSetstatus(responseResult, response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(responseResult); // отправка ответа
         } else {
-            json.remove("exception");
+            if (json == null) {
+                json = new JsonObject();
+            } else json.remove("exception");
             responseSetstatus(json.toString(), response);  // установление статуса ответа в зависимости от результата выполнения запроса
             response.getOutputStream().print(json.toString()); // отправка ответа
         }
         response.getOutputStream().flush();
-        //System.out.println(responseResult);
+        timeP = System.currentTimeMillis() - timeP;
+        if (timeP > 300) {
+            i++;
+            System.out.println("      TIME      " + timeP);
+            System.out.println(responseResult);
+        }
     }
 
 
@@ -141,30 +165,34 @@ public class Frontend extends HttpServlet {
 
 
     public JsonObject getRequestParser ( String data ) {
-        JsonObject jsonObject = new JsonObject();
-        String strings[] = data.split("&");
-        ArrayList<String> array = new ArrayList<>();
+        try {
+            JsonObject jsonObject = new JsonObject();
+            String strings[] = data.split("&");
+            ArrayList<String> array = new ArrayList<>();
 
-        for (int i = 0; i < strings.length; i++) {
-            String values[] = strings[i].split("=");
-            if (values.length == 2) {
-                if (jsonObject.get(values[0]) != null) {
-                    if (array.size() == 0) array.add(jsonObject.get(values[0]).getAsString());
-                    array.add(values[1]);
-                    jsonObject.addProperty(values[0], array.toString());
+            for (int i = 0; i < strings.length; i++) {
+                String values[] = strings[i].split("=");
+                if (values.length == 2) {
+                    if (jsonObject.get(values[0]) != null) {
+                        if (array.size() == 0) array.add(jsonObject.get(values[0]).getAsString());
+                        array.add(values[1]);
+                        jsonObject.addProperty(values[0], array.toString());
+                    } else {
+                        array.clear();
+                        jsonObject.addProperty(values[0], values[1]);
+                    }
                 } else {
-                    array.clear();
-                    jsonObject.addProperty(values[0], values[1]);
+                    jsonObject = new JsonObject();
+                    jsonObject.addProperty("exception", "exception");
+                    jsonObject.addProperty("code", 2);
+                    jsonObject.addProperty("response", "invalid request");
+                    return jsonObject;
                 }
-            }else {
-                jsonObject = new JsonObject();
-                jsonObject.addProperty("exception", "exception");
-                jsonObject.addProperty("code", 2);
-                jsonObject.addProperty("response", "invalid request");
-                return jsonObject;
             }
-        }
 
-        return jsonObject;
+            return jsonObject;
+        }catch (Exception e) {
+            return new JsonObject();
+        }
     }
 }
