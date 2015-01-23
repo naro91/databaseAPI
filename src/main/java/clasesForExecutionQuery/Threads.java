@@ -23,7 +23,7 @@ public class Threads implements GeneralMethods{
 
     private String create(JsonObject threadData) {
         try {
-            System.out.println("это Thread   " + threadData.toString() );
+            //System.out.println("это Thread   " + threadData.toString() );
             //System.out.println(threadData);
             int id = database.createThread(threadData);
             threadData.addProperty("id", id);
@@ -32,11 +32,13 @@ public class Threads implements GeneralMethods{
             e.printStackTrace();
             threadData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(threadData);
+        }catch (NullPointerException e) {
+            return JsonResponse.createResponse(threadData);
         }
     }
 
     private String close(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Close   " + query.toString());
+        //System.out.println("Это Thread Close   " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadClose(query));
         }catch (NullPointerException e) {
@@ -47,7 +49,7 @@ public class Threads implements GeneralMethods{
 
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println("Это Thread details   " + query.toString());
+        //System.out.println("Это Thread details   " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadDetails(query));
         }catch (NullPointerException e) {
@@ -57,7 +59,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String list(JsonObject query) throws SQLException {
-        System.out.println("Это Thread List    " + query.toString());
+        //System.out.println("Это Thread List    " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadList(query));
         }catch (NullPointerException e) {
@@ -67,7 +69,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String listPosts(JsonObject query) throws SQLException {
-        System.out.println("Это Thread List   " + query.toString());
+        //System.out.println("Это Thread List   " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadListPosts(query));
         }catch (NullPointerException e) {
@@ -77,7 +79,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String open(JsonObject query) throws SQLException {
-        System.out.println("Это Thread open   " + query.toString());
+        //System.out.println("Это Thread open   " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadOpen(query));
         } catch (NullPointerException e) {
@@ -87,7 +89,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String remove(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Remove    " + query.toString());
+        //System.out.println("Это Thread Remove    " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadRemove(query));
         }catch (NullPointerException e) {
@@ -97,7 +99,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String restore(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Restore    " + query.toString());
+        //System.out.println("Это Thread Restore    " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadRestore(query));
         }catch (NullPointerException e) {
@@ -107,7 +109,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String subscribe(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Subscribe    " + query.toString());
+        //System.out.println("Это Thread Subscribe    " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadSubscribe(query));
         }catch (NullPointerException e) {
@@ -117,7 +119,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String unsubscribe(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Unsubscribe    " + query.toString());
+        //System.out.println("Это Thread Unsubscribe    " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadUnsubscribe(query));
         }catch (NullPointerException e) {
@@ -127,7 +129,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String update(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Update    " + query.toString());
+        //System.out.println("Это Thread Update    " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadUpdate(query));
         }catch (NullPointerException e) {
@@ -137,7 +139,7 @@ public class Threads implements GeneralMethods{
     }
 
     private String vote(JsonObject query) throws SQLException {
-        System.out.println("Это Thread Vote   " + query.toString());
+        //System.out.println("Это Thread Vote   " + query.toString());
         try {
             return JsonResponse.createResponse(database.threadVote(query));
         }catch (NullPointerException e) {

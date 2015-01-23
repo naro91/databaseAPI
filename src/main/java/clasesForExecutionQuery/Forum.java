@@ -26,7 +26,7 @@ public class Forum implements GeneralMethods {
 
     private String create(JsonObject forumData) {
         try {
-            System.out.println("Это форум  " + forumData);
+           // System.out.println("Это форум  " + forumData);
             int id = database.createForum(forumData);
             forumData.addProperty("id", id);
             return JsonResponse.createResponse(forumData);
@@ -35,11 +35,13 @@ public class Forum implements GeneralMethods {
             //e.printStackTrace();
             forumData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(forumData);
+        }catch (NullPointerException e) {
+            return JsonResponse.createResponse(forumData);
         }
     }
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println("Это детали форум  " + query);
+        //System.out.println("Это детали форум  " + query);
         try {
             return JsonResponse.createResponse(database.forumDetails(query));
         }catch (NullPointerException e) {
@@ -49,7 +51,7 @@ public class Forum implements GeneralMethods {
     }
 
     private String listPosts(JsonObject query) throws SQLException {
-        System.out.println("Это Forum ListPost  " + query);
+        //System.out.println("Это Forum ListPost  " + query);
         try {
             return JsonResponse.createResponse(database.forumListPost(query));
         }catch (NullPointerException e) {
@@ -59,7 +61,7 @@ public class Forum implements GeneralMethods {
     }
 
     private String listThreads(JsonObject query) throws SQLException {
-        System.out.println("Это Forum ListThread  " + query);
+        //System.out.println("Это Forum ListThread  " + query);
         try {
             return JsonResponse.createResponse(database.forumListThread(query));
         }catch (NullPointerException e) {
@@ -69,8 +71,8 @@ public class Forum implements GeneralMethods {
     }
 
     private String listUsers(JsonObject query) throws SQLException {
-        System.out.println("Это Forum listUser   " + query.toString());
-        System.out.println("Это запрос   " + query.toString());
+        //System.out.println("Это Forum listUser   " + query.toString());
+        //System.out.println("Это запрос   " + query.toString());
         try {
             return JsonResponse.createResponse(database.forumListUsers(query));
         }catch (NullPointerException e) {

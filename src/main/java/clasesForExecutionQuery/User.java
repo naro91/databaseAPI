@@ -24,7 +24,7 @@ public class User implements GeneralMethods{
     private String create(JsonObject userData) {
         int id;
         try {
-            System.out.println("Это User  " + userData.toString());
+            //System.out.println("Это User  " + userData.toString());
             id = database.createUser(userData);
             if (id != -1) {
                 userData.addProperty("id", id);
@@ -38,7 +38,7 @@ public class User implements GeneralMethods{
     }
 
     private String details(JsonObject query) throws SQLException {
-        System.out.println("Это User детали  " + query.toString());
+        //System.out.println("Это User детали  " + query.toString());
         try {
             return JsonResponse.createResponse(database.userDetails(query));
         }catch (NullPointerException e) {
@@ -48,7 +48,7 @@ public class User implements GeneralMethods{
     }
 
     private String follow(JsonObject query) throws SQLException {
-        System.out.println("Это User Follow   " + query.toString());
+       // System.out.println("Это User Follow   " + query.toString());
         try {
             return JsonResponse.createResponse(database.userFollow(query));
         }catch (NullPointerException e) {
@@ -58,7 +58,7 @@ public class User implements GeneralMethods{
     }
 
     private String listFollowers(JsonObject query) throws SQLException {
-        System.out.println("Это User ListFollowers   " + query.toString() );
+        //System.out.println("Это User ListFollowers   " + query.toString() );
         try {
             return JsonResponse.createResponse(database.userListFollowers(query));
         }catch (NullPointerException e) {
@@ -68,7 +68,7 @@ public class User implements GeneralMethods{
     }
 
     private String listFollowing(JsonObject query) throws SQLException {
-        System.out.println("Это User ListFolloweing   " + query.toString());
+        //System.out.println("Это User ListFolloweing   " + query.toString());
         try {
             return JsonResponse.createResponse(database.userListFollowing(query));
         }catch (NullPointerException e) {
@@ -78,7 +78,7 @@ public class User implements GeneralMethods{
     }
 
     private String listPosts(JsonObject query) throws SQLException {
-        System.out.println("Это User ListPost   " + query.toString() );
+       // System.out.println("Это User ListPost   " + query.toString() );
         try {
             return JsonResponse.createResponse(database.userListPosts(query));
         }catch (NullPointerException e) {
@@ -88,7 +88,7 @@ public class User implements GeneralMethods{
     }
 
     private String unfollow(JsonObject query) throws SQLException {
-        System.out.println("Это User unfollow   " + query.toString());
+       // System.out.println("Это User unfollow   " + query.toString());
         try {
             return JsonResponse.createResponse(database.userUnfollow(query));
         } catch (NullPointerException e) {
@@ -98,7 +98,7 @@ public class User implements GeneralMethods{
     }
 
     private String updateProfile(JsonObject query) throws SQLException {
-        System.out.println("Это update user   " + query.toString());
+       // System.out.println("Это update user   " + query.toString());
         try {
             return JsonResponse.createResponse(database.userUpdate(query));
         }catch (NullPointerException e) {

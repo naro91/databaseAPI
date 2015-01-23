@@ -44,7 +44,7 @@ public class Frontend extends HttpServlet {
                       HttpServletResponse response) throws ServletException, IOException {
 
         response.setContentType("text/html;charset=utf-8");
-        timeG = System.currentTimeMillis();
+        //timeG = System.currentTimeMillis();
         try {
             json = getRequestParser(URLDecoder.decode(request.getQueryString(), "UTF-8")); // получение json из get запроса
         }catch (NullPointerException e) {
@@ -69,19 +69,19 @@ public class Frontend extends HttpServlet {
             response.getOutputStream().print(json.toString()); // отправка ответа
         }
         response.getOutputStream().flush();
-        timeG = System.currentTimeMillis() - timeG;
-        if (timeG > 300) {
-            i++;
-            System.out.println("      TIME      " + timeG);
-            System.out.println(responseResult);
-        }
+        //timeG = System.currentTimeMillis() - timeG;
+       // if (timeG > 300) {
+        //    i++;
+         //   System.out.println("      TIME      " + timeG);
+         //   System.out.println(responseResult);
+        //}
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
 
         response.setContentType("text/html;charset=utf-8");
-        timeP = System.currentTimeMillis();
+        //timeP = System.currentTimeMillis();
         json = requestGetJson(request);  // получение json из запроса
         if (json != null && json.get("exception") == null) {
             try {
@@ -101,12 +101,12 @@ public class Frontend extends HttpServlet {
             response.getOutputStream().print(json.toString()); // отправка ответа
         }
         response.getOutputStream().flush();
-        timeP = System.currentTimeMillis() - timeP;
-        if (timeP > 300) {
-            i++;
-            System.out.println("      TIME      " + timeP);
-            System.out.println(responseResult);
-        }
+        //timeP = System.currentTimeMillis() - timeP;
+        //if (timeP > 300) {
+         //   i++;
+          //  System.out.println("      TIME      " + timeP);
+           // System.out.println(responseResult);
+        //}
     }
 
 
