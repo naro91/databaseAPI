@@ -12,8 +12,9 @@ public class SimpleExecutor {
         stmt.close();
     }
 
-    public int execUpdateAndReturnId(PreparedStatement stm) throws SQLException  {
+    public int execUpdateAndReturnId(Connection connection, PreparedStatement stm) throws SQLException  {
         int id ;
+        connection.setAutoCommit(false);
         stm.executeUpdate();
         ResultSet resultSet = stm.getGeneratedKeys();
         if (resultSet != null && resultSet.next()) {
@@ -21,6 +22,8 @@ public class SimpleExecutor {
         } else {
             id = -1;
         }
+        connection.commit();
+        connection.setAutoCommit(true);
         stm.close();
         return id;
     }
