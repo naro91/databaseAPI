@@ -23,8 +23,8 @@ public class Threads implements GeneralMethods{
 
     private String create(JsonObject threadData) {
         try {
-            System.out.println("это Thread");
-            System.out.println(threadData);
+            //System.out.println("это Thread");
+            //System.out.println(threadData);
             int id = database.createThread(threadData);
             threadData.addProperty("id", id);
             return JsonResponse.createResponse(threadData);

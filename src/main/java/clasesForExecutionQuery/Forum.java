@@ -25,13 +25,13 @@ public class Forum implements GeneralMethods {
 
     private String create(JsonObject forumData) {
         try {
-            System.out.println("Это форум  ");
+            //System.out.println("Это форум  ");
             int id = database.createForum(forumData);
             forumData.addProperty("id", id);
             return JsonResponse.createResponse(forumData);
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             forumData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(forumData);
         }

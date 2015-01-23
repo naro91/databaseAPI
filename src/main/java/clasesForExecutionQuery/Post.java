@@ -23,8 +23,8 @@ public class Post implements GeneralMethods{
 
     private String create(JsonObject postData) {
         try {
-            System.out.println("Это Post create");
-            System.out.println(postData);
+            //System.out.println("Это Post create");
+            //System.out.println(postData);
             int id = database.createPost(postData);
             if (id != -1) {
                 postData.addProperty("id", id);
