@@ -48,6 +48,6 @@ public class JsonResponse {
     private static void requestFailBuilder (JsonObject requestResult, int code, String response) {
         requestResult.addProperty("code", code);
         requestResult.addProperty("response", response);
-        System.out.println("Exception Json :  " + requestResult.toString());
+        //System.out.println("Exception Json :  " + requestResult.toString());
     }
 }

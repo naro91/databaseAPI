@@ -31,7 +31,7 @@ public class Forum implements GeneralMethods {
             return JsonResponse.createResponse(forumData);
 
         } catch (SQLException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             forumData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(forumData);
         }
