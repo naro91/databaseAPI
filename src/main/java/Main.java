@@ -15,7 +15,7 @@ public class Main {
         Frontend frontend = new Frontend();
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setMinThreads(10);
-        threadPool.setMinThreads(100);
+        threadPool.setMaxThreads(100);
         Server server = new Server(threadPool);
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(5000);

@@ -254,10 +254,10 @@ public class Database {
     public long createPost( JsonObject postData ) throws SQLException {
         long idPost = -1;
 
-           // try (PreparedStatement stmThread = connection.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?")) {
-                //stmThread.setInt(1, postData.get("thread").getAsInt());
-                //if (stmThread.executeUpdate() == 1) {
-                    //stmThread.close();
+            try (PreparedStatement stmThread = connection.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?")) {
+                stmThread.setInt(1, postData.get("thread").getAsInt());
+                if (stmThread.executeUpdate() == 1) {
+                    stmThread.close();
                     SimpleExecutor exec = new SimpleExecutor();
                     try (PreparedStatement stmPost = connection.prepareStatement("INSERT INTO Post (`parent`, `isApproved`, `isHighlighted`," +
                                     "`isEdited`, `isSpam`, `isDeleted`, `date`, `thread`, `message`, `user`, `forum` ) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -277,15 +277,15 @@ public class Database {
                     } catch (SQLException e) {
                         throw e;
                     }
-                //} else {
-                 //   idPost = -1;
-                 //   stmThread.close();
-                //}
+                } else {
+                    idPost = -1;
+                    stmThread.close();
+                }
                 return idPost;
 
-            //} catch (SQLException e) {
-             //   throw e;
-            //}
+            } catch (SQLException e) {
+                throw e;
+            }
 
     }
 
