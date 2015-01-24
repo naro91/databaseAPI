@@ -33,10 +33,11 @@ public class Post implements GeneralMethods{
             return JsonResponse.createResponse(postData);
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             postData.addProperty("exception", "An unknown error");
             return JsonResponse.createResponse(postData);
         }catch (NullPointerException e) {
+            postData.addProperty("exception", "invalid query");
             return JsonResponse.createResponse(postData);
         }
     }
