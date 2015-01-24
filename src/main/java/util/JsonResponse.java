@@ -3,6 +3,8 @@ package util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.util.ConcurrentModificationException;
+
 
 /**
  * Created by Abovyan Narek on 06.11.14.
@@ -42,12 +44,18 @@ public class JsonResponse {
             }
         }
 
-        return requestResult.toString();
+        try {
+            return requestResult.toString();
+        }catch (ConcurrentModificationException e) {
+            requestResult = new JsonObject();
+            requestFailBuilder(requestResult, 4, "An unknown error");
+            return requestResult.toString();
+        }
     }
 
     private static void requestFailBuilder (JsonObject requestResult, int code, String response) {
         requestResult.addProperty("code", code);
         requestResult.addProperty("response", response);
-        System.out.println("Exception Json :  " + requestResult.toString());
+        //System.out.println("Exception Json :  " + requestResult.toString());
     }
 }

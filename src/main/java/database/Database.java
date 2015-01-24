@@ -67,18 +67,14 @@ public class Database {
 
     public int createForum(JsonObject forumDate) throws SQLException {
         SimpleExecutor exec = new SimpleExecutor();
-        try (Connection connectionCreat = DriverManager.getConnection(URL, USERNAME, PASSWORD) ) {
-            try (PreparedStatement stm = connectionCreat.prepareStatement("INSERT INTO Forum (`user`, `name`, `short_name`) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement stm = connection.prepareStatement("INSERT INTO Forum (`user`, `name`, `short_name`) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
                 stm.setString(1, forumDate.get("user").getAsString());
                 stm.setString(2, forumDate.get("name").getAsString());
                 stm.setString(3, forumDate.get("short_name").getAsString());
 
-                return exec.execUpdateAndReturnId(connectionCreat, stm);
-            } catch (SQLException e) {
+                return exec.execUpdateAndReturnId(stm);
+        } catch (SQLException e) {
                 throw e;
-            }
-        }catch (SQLException e) {
-            throw e;
         }
     }
 
@@ -256,14 +252,14 @@ public class Database {
 
 
     public int createPost( JsonObject postData ) throws SQLException {
-        int idPost;
-        try (Connection connectionCreat = DriverManager.getConnection(URL, USERNAME, PASSWORD) ) {
-            try (PreparedStatement stmThread = connectionCreat.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?")) {
-                stmThread.setInt(1, postData.get("thread").getAsInt());
-                if (stmThread.executeUpdate() == 1) {
-                    stmThread.close();
+        int idPost = -1;
+
+           // try (PreparedStatement stmThread = connection.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?")) {
+                //stmThread.setInt(1, postData.get("thread").getAsInt());
+                //if (stmThread.executeUpdate() == 1) {
+                    //stmThread.close();
                     SimpleExecutor exec = new SimpleExecutor();
-                    try (PreparedStatement stmPost = connectionCreat.prepareStatement("INSERT INTO Post (`parent`, `isApproved`, `isHighlighted`," +
+                    try (PreparedStatement stmPost = connection.prepareStatement("INSERT INTO Post (`parent`, `isApproved`, `isHighlighted`," +
                                     "`isEdited`, `isSpam`, `isDeleted`, `date`, `thread`, `message`, `user`, `forum` ) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                             Statement.RETURN_GENERATED_KEYS)) {
                         stmPost.setString(1, safelyGetStringFromJson(postData, "parent"));
@@ -277,22 +273,20 @@ public class Database {
                         stmPost.setString(9, postData.get("message").getAsString());
                         stmPost.setString(10, postData.get("user").getAsString());
                         stmPost.setString(11, postData.get("forum").getAsString());
-                        idPost = exec.execUpdateAndReturnId(connectionCreat, stmPost);
+                        idPost = exec.execUpdateAndReturnId(stmPost);
                     } catch (SQLException e) {
                         throw e;
                     }
-                } else {
-                    idPost = -1;
-                    stmThread.close();
-                }
+                //} else {
+                 //   idPost = -1;
+                 //   stmThread.close();
+                //}
                 return idPost;
 
-            } catch (SQLException e) {
-                throw e;
-            }
-        } catch ( SQLException e) {
-            throw e;
-        }
+            //} catch (SQLException e) {
+             //   throw e;
+            //}
+
     }
 
     public JsonObject postDetails(JsonObject query) throws SQLException {
@@ -450,28 +444,24 @@ public class Database {
     public int createUser(JsonObject userData) throws SQLException {
         SimpleExecutor exec = new SimpleExecutor();
         int id;
-        try (Connection connectionCreat =DriverManager.getConnection(URL, USERNAME, PASSWORD) ) {
-            try (PreparedStatement stm = connectionCreat.prepareStatement("INSERT INTO User (`isAnonymous`, `username`, `about`," +
+        try (PreparedStatement stm = connection.prepareStatement("INSERT INTO User (`isAnonymous`, `username`, `about`," +
                             "`name`, `email`) VALUES (?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS)) {
-                stm.setBoolean(1, userData.get("isAnonymous").getAsBoolean());
-                stm.setString(2, safelyGetStringFromJson(userData, "username"));
-                stm.setString(3, safelyGetStringFromJson(userData, "about"));
-                stm.setString(4, safelyGetStringFromJson(userData, "name"));
-                stm.setString(5, safelyGetStringFromJson(userData, "email")); //userData.get("email").getAsString());
-                try {
-                    id = exec.execUpdateAndReturnId(connectionCreat, stm);
-                } catch (MySQLIntegrityConstraintViolationException e) {
-                    id = -1;
-                    stm.close();
-                }
+            stm.setBoolean(1, Boolean.parseBoolean(safelyGetStringFromJson(userData, "isAnonymous")));
+            stm.setString(2, safelyGetStringFromJson(userData, "username"));
+            stm.setString(3, safelyGetStringFromJson(userData, "about"));
+            stm.setString(4, safelyGetStringFromJson(userData, "name"));
+            stm.setString(5, safelyGetStringFromJson(userData, "email")); //userData.get("email").getAsString());
+            try {
+                id = exec.execUpdateAndReturnId(stm);
+            } catch (MySQLIntegrityConstraintViolationException e) {
+                id = -1;
+                stm.close();
+            }
 
                 return id;
-            } catch (SQLException e) {
+        } catch (SQLException e) {
                 throw e;
-            }
-        }catch (SQLException e) {
-            throw e;
         }
     }
 
@@ -652,8 +642,7 @@ public class Database {
 
     public int createThread(JsonObject threadData) throws SQLException {
         SimpleExecutor exec = new SimpleExecutor();
-        try ( Connection connectionCreat = DriverManager.getConnection(URL, USERNAME, PASSWORD) ) {
-            try (PreparedStatement stm = connectionCreat.prepareStatement("INSERT INTO Thread (`forum`, `title`, `isClosed`," +
+            try (PreparedStatement stm = connection.prepareStatement("INSERT INTO Thread (`forum`, `title`, `isClosed`," +
                             "`user`, `date`, `message`, `slug`, `isDeleted`) VALUES (?,?,?,?,?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS)) {
                 stm.setString(1, threadData.get("forum").getAsString());
@@ -665,13 +654,11 @@ public class Database {
                 stm.setString(7, threadData.get("slug").getAsString());
                 stm.setBoolean(8, threadData.get("isDeleted").getAsBoolean());
 
-                return exec.execUpdateAndReturnId(connectionCreat, stm);
+                return exec.execUpdateAndReturnId(stm);
             } catch (SQLException e) {
                 throw e;
             }
-        }catch (SQLException e) {
-            throw e;
-        }
+
     }
 
     public JsonObject threadDetails(JsonObject query) throws SQLException {
