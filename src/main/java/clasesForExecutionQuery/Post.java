@@ -25,7 +25,7 @@ public class Post implements GeneralMethods{
         try {
             //System.out.println("Это Post create   " + postData.toString());
             //System.out.println(postData);
-            int id = database.createPost(postData);
+            long id = database.createPost(postData);
             if (id != -1) {
                 postData.addProperty("id", id);
             } else postData.addProperty("exception", "invalid query");

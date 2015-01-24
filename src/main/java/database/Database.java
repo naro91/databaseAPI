@@ -251,8 +251,8 @@ public class Database {
 
 
 
-    public int createPost( JsonObject postData ) throws SQLException {
-        int idPost = -1;
+    public long createPost( JsonObject postData ) throws SQLException {
+        long idPost = -1;
 
            // try (PreparedStatement stmThread = connection.prepareStatement("UPDATE Thread SET posts = posts + 1 WHERE id = ?")) {
                 //stmThread.setInt(1, postData.get("thread").getAsInt());
