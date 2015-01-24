@@ -105,12 +105,6 @@ public class Frontend extends HttpServlet {
 
     private void responseSetstatus (String status, HttpServletResponse response) { // функция для установления статуса ответа
         switch (status) {
-            case "bad1":
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                break;
-            case "bad":
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                break;
             default: response.setStatus(HttpServletResponse.SC_OK);
                 break;
         }
